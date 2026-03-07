@@ -135,16 +135,20 @@ class LuaEditor(QsciScintilla):
         self.setTabWidth(4)
         self.setTabIndents(True)
 
-        def keyPressEvent(self, event):
-            char = event.text()
-            if char in "({[":
-                closing = {"(":")", "{":"}", "[":"]"}[char]
-                self.insert(char + closing)
-                self.setCursorPosition(*self.getCursorPosition())
-                # Move Cursor Back Inside
-                self.setCursorPosition(self.getCursorPosition()[0], self.getCursorPosition()[1][-1])
-            else:
-                super().keyPressEvent(event)
+    def keyPressEvent(self, event):
+        char = event.text()
+
+        pairs = {"(":")", "{":"}", "[":"]"}
+
+        if char in pairs:
+            closing = pairs[char]
+            line, index = self.getCursorPosition()
+            self.insert(char + closing)
+
+            # Move Cursor Between Brackets
+            self.setCursorPosition(line, index + 1)
+        else:
+            super().keyPressEvent(event)
         
 
 class MainWindow(QMainWindow):
