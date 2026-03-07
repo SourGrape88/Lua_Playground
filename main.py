@@ -1,10 +1,12 @@
 import sys
 
+from styling import apply_style
 from lupa import LuaRuntime
 from PyQt6.QtWidgets import (QApplication, QWidget, QMainWindow, QPlainTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFrame)
-from PyQt6.QtGui import QPainter, QColor 
+from PyQt6.QtGui import QPainter, QColor, QFont 
 from PyQt6.QtCore import QTimer 
 from PyQt6.Qsci import QsciScintilla, QsciLexerLua
+
 
 # ---------CANVAS (GRAPHICS) ------------------------------------
 
@@ -62,7 +64,7 @@ class Canvas(QWidget):
 
         # Clear Previous Frame's Commands
         self.draw_commands.clear()
-        self.lua_draw_commands.clear()
+        #self.lua_draw_commands.clear()
 
         # --- Call Lua Update() If it Exists -------
         lua_update = getattr(self.lua.globals(), "update", None)
@@ -107,17 +109,84 @@ class LuaEditor(QsciScintilla):
     def __init__(self):
         super().__init__()
 
+        # Font
+        font = QFont("Consolas", 16)
+        self.setFont(font)
+        #self.setMarginsForegroundColor(QColor("#ECA0BE"))
+        #self.setMarginsBackgroundColor(QColor("#3C6774"))
+        self.setMarginsFont(QFont("Consolas", 12, QFont.Weight.Bold))
+
+        # Selection Highlight Color
+        self.setSelectionBackgroundColor(QColor("#E31815"))
+        self.setSelectionForegroundColor(QColor("#8205C5"))
+
         # Syntax Highlighting
+        #editor = QsciScintilla()
+        
+        # Lexer
         lexer = QsciLexerLua() # Lua Syntax
-        lexer.setDefaultFont(self.font())
+        lexer.setDefaultFont(font)
+
+        # Text Editor Background Color
+        lexer.setDefaultPaper(QColor("#E31815"))
+
+        # Text Editor Font Color
+        lexer.setColor(QColor("#F2BC71"), 0)
+
+        # Comments
+        lexer.setColor(QColor("#851764"), 1)
+        lexer.setColor(QColor("#C5EBCA"), 2)
+        
+        # Numbers
+        lexer.setColor(QColor("#B0D2F3"), 3)
+
+        # Keywords (function, if, end, etc)
+        #lexer.setKeywords(0,"and break do else elseif end false for function if in local nil not or repeat return then true until while")
+        lexer.setColor(QColor("#D78F24"), 4)
+
+        # Strings
+        lexer.setColor(QColor("#5B3EEB"), 5)
+        lexer.setColor(QColor("#9A8C09"), 6)
+        lexer.setColor(QColor("#CE9178"), 7)
+
+        # Operators
+        lexer.setColor(QColor("#0A24F5"), 9)
+
+        # Identifiers
+        # Identifier Background
+        lexer.setPaper(QColor("#E31815"), 10)
+
+        # Identifier Foreground
+        lexer.setColor(QColor("#9CDCFE"), 10)
+
+        
+
+        #for style in range(128):
+            #lexer.setFont(font, style)
+            #lexer.setPaper(QColor("#53AFD3"), style)
+
+        # Text Editor Font Background Color
+        #lexer.setPaper(QColor("#FFFFFF"))
+
+        
         self.setLexer(lexer)
+        self.setPaper(QColor("#7E53D3"))
+        
+        #for style in range(128):
+            #lexer.setPaper(QColor("#C11818"), style)
+
+        # Text Editor Colors
+        
 
         # Line Numbers
         self.setMarginType(0, QsciScintilla.MarginType.NumberMargin)
         self.setMarginWidth(0, "0000") # Adjust width for line numbers
-        self.setMarginsForegroundColor(QColor("#AAAAAA"))
-        self.setMarginBackgroundColor(0, QColor("#3C6774"))
+        # Line Number Color
+        self.setMarginsForegroundColor(QColor("#D12631"))
 
+        # Line Number Background Color
+        self.setMarginsBackgroundColor(QColor("#234EB3"))
+     
         # Auto-Close Brackets
         self.setAutoCompletionReplaceWord(False) # So it doesnt replace Existing Text
         self.setAutoCompletionUseSingle(QsciScintilla.AutoCompletionUseSingle.AcusAlways) # Single Suggestion Only
@@ -219,6 +288,7 @@ class MainWindow(QMainWindow):
             self.console.appendPlainText(f"Lua Error: {e}")
 
 app = QApplication(sys.argv)
+apply_style(app)
 window = MainWindow()
 window.show()
 sys.exit(app.exec())
