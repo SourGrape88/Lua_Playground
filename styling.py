@@ -2,16 +2,11 @@ def apply_style(app):
     app.setStyleSheet("""
     QMainWindow {
         background-color: #D35353;
-    }
-    
-    QsciScintilla {
-        background-color: #0A24F5;
-                          
-    }                  
+    }                 
     
     QWidget {
         color: #0B24D5;
-        font-family: Consolas;
+        font-family: DepartureMono Nerd Font;
         font-size: 12pt;
     }
     
@@ -23,18 +18,19 @@ def apply_style(app):
     }
                       
     QPushButton {
-        background-color: #EAA300;
+        background-color: #EAA100;
         color: white;
         border-radius: 6px;
         padding: 6px;
     }
                       
     QPushButton:hover {
-        background-color: #EAA100;                  
+        background-color: #FFCC5D;
+        color: white;                 
     }
                       
     QPushButton:pressed {
-        background-color: #888;                  
+        background-color: #234EB3;                  
     }
                       
 """)

@@ -5,7 +5,7 @@ from lupa import LuaRuntime
 from PyQt6.QtWidgets import (QApplication, QWidget, QMainWindow, QPlainTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QFrame)
 from PyQt6.QtGui import QPainter, QColor, QFont 
 from PyQt6.QtCore import QTimer 
-from PyQt6.Qsci import QsciScintilla, QsciLexerLua, QsciAPIs
+from PyQt6.Qsci import QsciScintilla, QsciLexerLua
 
 
 # ---------CANVAS (GRAPHICS) ------------------------------------
@@ -115,13 +115,11 @@ class LuaEditor(QsciScintilla):
         #color = "#FFCC5D"
 
         # Font
-        font = QFont("DepartureMono Nerd Font", 16)
-        bold = QFont("DepartureMono Nerd Font", 16)
-        bold.setBold(True)
+        font = QFont("Consolas", 16)
         self.setFont(font)
         #self.setMarginsForegroundColor(QColor("#ECA0BE"))
         #self.setMarginsBackgroundColor(QColor("#3C6774"))
-        self.setMarginsFont(QFont("FiraMono Nerd Font", 16, QFont.Weight.Bold))
+        self.setMarginsFont(QFont("Consolas", 16, QFont.Weight.Bold))
 
         # Selection Highlight Color
         self.setSelectionBackgroundColor(QColor("#EA7674"))
@@ -133,16 +131,11 @@ class LuaEditor(QsciScintilla):
         # Lexer
         lexer = QsciLexerLua() # Lua Syntax
         lexer.setDefaultFont(font)
-
         for style in range(128):
             lexer.setFont(font, style)
             lexer.setPaper(QColor(red), style)
 
-        lexer.setFont(bold, QsciLexerLua.Keyword)
-        lexer.setFont(bold, QsciLexerLua.Operator)
-
-
-        self.setPaper(QColor(red))
+            self.setPaper(QColor(red))
         # Text Editor Background Color
         
         #lexer.setDefaultPaper(QColor("#E31815"))
