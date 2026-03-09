@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         try:
             # Start "Running Code" Status Light
             self.status_indicator.set_running()
-    
+            
             # Force the UI to Redraw
             QApplication.processEvents()
 
@@ -93,12 +93,13 @@ class MainWindow(QMainWindow):
             # Execute New Lua Code
             self.lua.execute(code)
             # Start "Finished" Status Light
-            self.status_indicator.set_finished()
+            #self.status_indicator.set_finished()
+            QTimer.singleShot(500, self.status_indicator.set_finished)
             QTimer.singleShot(2000, self.status_indicator.set_idle) # 1500 = 1.5 Seconds
         except Exception as e:
             self.console.log(f"Lua Error: {e}")
             self.status_indicator.set_error()
 
     def reset_status(self):
-        self.status_icon.setMovie(self.idle_icon)
-        self.idle_icon.start()
+        self.status_indicator.set_idle()
+        
