@@ -1,0 +1,25 @@
+# ------------EDITOR_TABS.PY----------------
+from PyQt6.QtWidgets import QTabWidget
+from code_editor import LuaEditor
+
+class EditorTabs(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Makes the "X" to Close Tabs
+        self.setTabsClosable(True)
+        # Remove Tab when "X" is Clicked
+        self.tabCloseRequested.connect(self.close_tab)
+
+        # Start with One Tab
+        self.new_tab("Main.lua")
+
+    def new_tab(self, filename="Untitled.lua"):
+        editor = LuaEditor()
+        index = self.addTab(editor, filename)
+        self.setCurrentIndex(index)
+
+    def close_tab(self, index):
+        self.removeTab(index)
+
+    def current_editor(self):
+        return self.currentWidget()
