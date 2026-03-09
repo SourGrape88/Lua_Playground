@@ -2,7 +2,7 @@
 
 # This Script Controls the Main UI Layout
 
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QPlainTextEdit, QLabel, QApplication
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QPlainTextEdit, QLabel, QApplication, QTabWidget
 from PyQt6.QtGui import QMovie, QPixmap
 from PyQt6.QtCore import QTimer
 from graphics_canvas import Canvas
@@ -21,8 +21,22 @@ class MainWindow(QMainWindow):
         # Pass Lua to Canvas
         self.canvas = Canvas(self.lua)
 
+        self.tabs = QTabWidget()
+        # Makes the "X" to Close Tabs
+        self.tabs.setTabsClosable(True)
+        # Remove Tab when "X" is Clicked
+        self.tabs.tabCloseRequested.connect(self.close_tab)
+
+        # Start with One Tab
+        self.new_tab("Main.lua")
+
+        # New Tab Button
+        self.new_tab_button = QPushButton("New Tab")
+        self.new_tab_button.clicked.connect(lambda: self.new_tab())
+
+
         # Create the Code/Text Editor
-        self.editor = LuaEditor()
+        #self.editor = LuaEditor()
 
         # Create a "Run Button"
         self.run_button = QPushButton("Run")
@@ -50,7 +64,7 @@ class MainWindow(QMainWindow):
         top_layout = QHBoxLayout() # Horizontal: Editor + Canvas
         button_layout = QHBoxLayout() # Run + Status Buttons
 
-        top_layout.addWidget(self.editor, stretch=1)
+        top_layout.addWidget(self.tabs, stretch=1)
         top_layout.addWidget(self.canvas, stretch=1)
 
         main_layout.addLayout(top_layout)
@@ -59,6 +73,7 @@ class MainWindow(QMainWindow):
 
         button_layout.addWidget(self.run_button, stretch=1)
         button_layout.addWidget(self.status_icon)
+        button_layout.addWidget(self.new_tab_button)
 
         # Create a Central Widget
         central_widget = QWidget()
@@ -82,9 +97,24 @@ class MainWindow(QMainWindow):
         
         self.lua_globals.print = lua_print
 
+    def new_tab(self, filename="Untitled.lua"):
+        editor = LuaEditor()
+        index = self.tabs.addTab(editor, filename)
+        self.tabs.setCurrentIndex(index)
+
+    def close_tab(self, index):
+        self.tabs.removeTab(index)
+
+    def current_editor(self):
+        return self.tabs.currentWidget()
+
     def run_lua_code(self):
         # Placeholder for now: Just print Editor Text to Console
-        code = self.editor.text()
+        code = self.current_editor().text()
+        
+        # Clear Console Before Running
+        self.console.clear()
+        
         try:
             # Start "Running Code" Status Light
             self.status_icon.setMovie(self.run_icon)
