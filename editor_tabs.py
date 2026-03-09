@@ -13,8 +13,12 @@ class EditorTabs(QTabWidget):
         # Start with One Tab
         self.new_tab("Main.lua")
 
-    def new_tab(self, filename="Untitled.lua"):
+    def new_tab(self, filename="Untitled.lua", filepath=None):
         editor = LuaEditor()
+
+        # Store File Path on the editor
+        editor.filepath = filepath
+
         index = self.addTab(editor, filename)
         self.setCurrentIndex(index)
 
@@ -23,3 +27,7 @@ class EditorTabs(QTabWidget):
 
     def current_editor(self):
         return self.currentWidget()
+    
+    def current_filepath(self):
+        editor = self.current_editor()
+        return getattr(editor, "filepath", None)
