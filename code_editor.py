@@ -126,14 +126,14 @@ class CodeEditor(QsciScintilla):
         self.setMatchedBraceBackgroundColor(QColor("#FC8989"))
         # Auto-Close Brackets
         self.setAutoCompletionReplaceWord(False) # So it doesnt replace Existing Text
-        self.setAutoCompletionUseSingle(QsciScintilla.AutoCompletionUseSingle.AcusAlways) # Single Suggestion Only
+        #self.setAutoCompletionUseSingle(QsciScintilla.AutoCompletionUseSingle.AcusAlways) # Single Suggestion Only
         self.setAutoCompletionThreshold(1) # Trigger Quickly
         self.setAutoIndent(True)
         
         # AutoComplete & Brace Matching
         self.setAutoCompletionSource(QsciScintilla.AutoCompletionSource.AcsAll)
         self.setAutoCompletionCaseSensitivity(False)
-        self.setAutoCompletionThreshold(1) # Trigger After 1 Characters
+        self.setAutoCompletionUseSingle(QsciScintilla.AutoCompletionUseSingle.AcusNever)
 
         self.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
         self.setAutoIndent(True)

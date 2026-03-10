@@ -16,6 +16,7 @@ from output_console import OutputConsole
 from file_explorer import FileExplorer
 from file_manager import FileManager
 from overlay_widget import HolographicOverlay
+from lsp_manager import LSPClient
 
 from lupa import LuaRuntime
 
@@ -28,12 +29,19 @@ class MainWindow(QMainWindow):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self.lua_globals = self.lua.globals()
 
+        # Start LSP Clients
+        self.lua_client = LSPClient(["lua-language-server", "-E", "main.lua"])
+        self.lua_client.start()
+
+        self.python_client = LSPClient(["pyright-langserver", "--stdio"])
+        self.python_client.start()
+
         # Pass Lua to Canvas
         self.canvas = Canvas(self.lua)
         # Adds Editor_tabs File
         self.tabs = EditorTabs()
         self.new_tab_button = QPushButton("New Tab")
-        self.new_tab_button.clicked.connect(lambda: self.tabs.new_tab())
+        self.new_tab_button.clicked.connect(lambda: self.create_new_editor_tab(language=self.console.language))
 
         # Add File Explorer from file_explorer.py
         self.file_explorer = FileExplorer()
@@ -70,7 +78,7 @@ class MainWindow(QMainWindow):
         # Menu Bar Setup -------------------------------------
         self.menu_bar = self.menuBar()
         file_menu = self.menu_bar.addMenu("File")
-        file_menu.addAction("New Tab", self.tabs.new_tab)
+        file_menu.addAction("New Tab", lambda: self.create_new_editor_tab())
         file_menu.addAction("Open", self.file_manager.open_file)
         file_menu.addAction("Restart IDE", self.restart_ide)
         #menu_bar.addMenu(file_menu)
@@ -186,6 +194,17 @@ class MainWindow(QMainWindow):
             self.console.log("-------------------")
             self.status_indicator.set_error()
 
+    def create_new_editor_tab(self, filename="Untitled.lua", language="lua"):
+        """Create a new tab and assign the correct LSP client."""
+        if language == "lua":
+            lsp = self.lua_client
+        elif language == "python":
+            lsp = self.python_client
+        else:
+            lsp = None
+
+        self.tabs.new_tab(filename=filename, lsp_client=lsp, language=language)
+
     def reset_status(self):
         self.status_indicator.set_idle()
 
@@ -196,6 +215,13 @@ class MainWindow(QMainWindow):
     def set_language(self, language):
         """Change the Active Scripting Language"""
         self.console.language = language
+        editor = self.tabs.current_editor()
+        if editor:
+            editor.set_language(language)
+            if language == "lua":
+                editor.lsp_client = self.lua_client
+            elif language == "python":
+                editor.lsp_client = self.py_client
         self.console.log(f"Language Set to: {language}")
 
     def restart_ide(self):

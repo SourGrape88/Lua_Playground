@@ -13,11 +13,12 @@ class EditorTabs(QTabWidget):
         # Start with One Tab
         self.new_tab("Main.lua")
 
-    def new_tab(self, filename="Untitled.lua", filepath=None):
+    def new_tab(self, filename="Untitled.lua", filepath=None, lsp_client=None, language="lua"):
         editor = CodeEditor()
 
         # Store File Path on the editor
         editor.filepath = filepath
+        editor.lsp_client = lsp_client 
 
         index = self.addTab(editor, filename)
         self.setCurrentIndex(index)
