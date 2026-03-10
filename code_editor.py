@@ -29,9 +29,11 @@ class CodeEditor(QsciScintilla):
         # Syntax Highlighting
         #editor = QsciScintilla()
         
-        # Lexer
+        # Lua Lexer
         self.lua_lexer = QsciLexerLua() # Lua Syntax
         self.lua_lexer.setDefaultFont(font)
+
+        # Python Lexer
         self.python_lexer = QsciLexerPython()
         self.python_lexer.setDefaultFont(font)
 
@@ -47,10 +49,27 @@ class CodeEditor(QsciScintilla):
 
         self.python_lexer.setDefaultPaper(QColor(red))
 
-        self.python_lexer.setColor(QColor("#1C7BB6"), QsciLexerPython.Default)
+        self.python_lexer.setColor(QColor("#00FF77"), QsciLexerPython.Default)
 
         self.python_lexer.setColor(QColor(blue), QsciLexerPython.Comment)
-        self.python_lexer.setColor(QColor(gold), QsciLexerPython.Identifier)
+        self.python_lexer.setFont(bold, QsciLexerPython.Comment)
+
+        # Identifier = Default Words
+        self.python_lexer.setColor(QColor("#00CCFF"), QsciLexerPython.Identifier)
+        #self.python_lexer.setFont(bold, QsciLexerPython.Identifier)
+
+        self.python_lexer.setColor(QColor(gold), QsciLexerPython.DoubleQuotedString)
+        self.python_lexer.setColor(QColor("#FCB5D6"), QsciLexerPython.Number)
+        self.python_lexer.setColor(QColor("#09FF00"), QsciLexerPython.ClassName)
+
+        self.python_lexer.setColor(QColor("#F9C4ED"), QsciLexerPython.FunctionMethodName)
+        self.python_lexer.setFont(bold, QsciLexerPython.FunctionMethodName)
+        # Operator = ., "()", "+", "=", "<", etc
+        self.python_lexer.setColor(QColor("#FFFFFF"), QsciLexerPython.Operator)
+        self.python_lexer.setFont(bold, QsciLexerPython.Operator)
+
+        self.python_lexer.setColor(QColor("#FFD900"), QsciLexerPython.Keyword)
+        self.python_lexer.setFont(bold, QsciLexerPython.Keyword)
 
         self.lua_lexer.setFont(bold, QsciLexerLua.Keyword)
         self.lua_lexer.setFont(bold, QsciLexerLua.Operator)
