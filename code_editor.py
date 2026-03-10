@@ -1,9 +1,9 @@
 # -----------Code Editor-----------------
 
-from PyQt6.Qsci import QsciScintilla, QsciLexerLua 
+from PyQt6.Qsci import QsciScintilla, QsciLexerLua, QsciLexerPython
 from PyQt6.QtGui import QFont, QColor
 
-class LuaEditor(QsciScintilla):
+class CodeEditor(QsciScintilla):
     def __init__(self):
         super().__init__()
 
@@ -13,13 +13,14 @@ class LuaEditor(QsciScintilla):
         #color = "#FFCC5D"
 
         # Font
-        font = QFont("DepartureMono Nerd Font", 16)
-        bold = QFont("DepartureMono Nerd Font", 16)
+        font = QFont("FiraMono Nerd Font", 16)
+        bold = QFont("FiraMono Nerd Font", 16)
         bold.setBold(True)
         self.setFont(font)
-        #self.setMarginsForegroundColor(QColor("#ECA0BE"))
-        #self.setMarginsBackgroundColor(QColor("#3C6774"))
-        self.setMarginsFont(QFont("FiraMono Nerd Font", 16, QFont.Weight.Bold))
+
+        margin_font = QFont("FiraMono Nerd Font", 16)
+        margin_font.setBold(True)
+        self.setMarginsFont(margin_font)
 
         # Selection Highlight Color
         self.setSelectionBackgroundColor(QColor("#EA7674"))
@@ -29,15 +30,30 @@ class LuaEditor(QsciScintilla):
         #editor = QsciScintilla()
         
         # Lexer
-        lexer = QsciLexerLua() # Lua Syntax
-        lexer.setDefaultFont(font)
+        self.lua_lexer = QsciLexerLua() # Lua Syntax
+        self.lua_lexer.setDefaultFont(font)
+        self.python_lexer = QsciLexerPython()
+        self.python_lexer.setDefaultFont(font)
 
         for style in range(128):
-            lexer.setFont(font, style)
-            lexer.setPaper(QColor(red), style)
+            self.lua_lexer.setFont(font, style)
+            self.lua_lexer.setPaper(QColor(red), style)
 
-        lexer.setFont(bold, QsciLexerLua.Keyword)
-        lexer.setFont(bold, QsciLexerLua.Operator)
+        self.lua_lexer.setDefaultPaper(QColor(red))
+
+        for style in range(128):
+            self.python_lexer.setFont(font, style)
+            self.python_lexer.setPaper(QColor(red), style)
+
+        self.python_lexer.setDefaultPaper(QColor(red))
+
+        self.python_lexer.setColor(QColor("#1C7BB6"), QsciLexerPython.Default)
+
+        self.python_lexer.setColor(QColor(blue), QsciLexerPython.Comment)
+        self.python_lexer.setColor(QColor(gold), QsciLexerPython.Identifier)
+
+        self.lua_lexer.setFont(bold, QsciLexerLua.Keyword)
+        self.lua_lexer.setFont(bold, QsciLexerLua.Operator)
 
 
         self.setPaper(QColor(red))
@@ -46,36 +62,36 @@ class LuaEditor(QsciScintilla):
         #lexer.setDefaultPaper(QColor("#E31815"))
 
         # Text Editor Font Color 
-        lexer.setColor(QColor(gold), QsciLexerLua.Default)
+        self.lua_lexer.setColor(QColor(gold), QsciLexerLua.Default)
         
 
         # Comments
-        lexer.setColor(QColor("#851764"), QsciLexerLua.Comment)
+        self.lua_lexer.setColor(QColor("#851764"), QsciLexerLua.Comment)
         
-        lexer.setColor(QColor("#C5EBCA"), QsciLexerLua.LineComment)
+        self.lua_lexer.setColor(QColor("#C5EBCA"), QsciLexerLua.LineComment)
         
-        lexer.setColor(QColor("#B0D2F3"), QsciLexerLua.Number)
+        self.lua_lexer.setColor(QColor("#B0D2F3"), QsciLexerLua.Number)
 
         #Numbers
-        lexer.setColor(QColor("#00BBFF"), QsciLexerLua.Keyword)
+        self.lua_lexer.setColor(QColor("#00BBFF"), QsciLexerLua.Keyword)
 
         # Strings
         # "for, if, while, etc"
-        lexer.setColor(QColor("#FFFFFF"), QsciLexerLua.String)
+        self.lua_lexer.setColor(QColor("#FFFFFF"), QsciLexerLua.String)
         #Inside Quotes
-        lexer.setColor(QColor("#000000"), QsciLexerLua.Character)
-        lexer.setColor(QColor("#CE9178"), QsciLexerLua.LiteralString)
-        lexer.setColor(QColor("#FFFFFF"), QsciLexerLua.UnclosedString)
+        self.lua_lexer.setColor(QColor("#000000"), QsciLexerLua.Character)
+        self.lua_lexer.setColor(QColor("#CE9178"), QsciLexerLua.LiteralString)
+        self.lua_lexer.setColor(QColor("#FFFFFF"), QsciLexerLua.UnclosedString)
 
         # Operators
-        lexer.setColor(QColor(blue), QsciLexerLua.Operator)
+        self.lua_lexer.setColor(QColor(blue), QsciLexerLua.Operator)
 
         # Identifiers
 
         # Identifier Foreground (Normal Text, Print, etc)
-        lexer.setColor(QColor(gold), QsciLexerLua.Identifier)
+        self.lua_lexer.setColor(QColor(gold), QsciLexerLua.Identifier)
 
-        self.setLexer(lexer)
+        self.setLexer(self.lua_lexer)
         #self.setPaper(QColor("#7E53D3"))
 
         # Line Numbers
@@ -98,13 +114,21 @@ class LuaEditor(QsciScintilla):
         # AutoComplete & Brace Matching
         self.setAutoCompletionSource(QsciScintilla.AutoCompletionSource.AcsAll)
         self.setAutoCompletionCaseSensitivity(False)
-        self.setAutoCompletionThreshold(1) # Trigger After 2 Characters
+        self.setAutoCompletionThreshold(1) # Trigger After 1 Characters
 
         self.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
         self.setAutoIndent(True)
         self.setIndentationWidth(4)
         self.setTabWidth(4)
         self.setTabIndents(True)
+
+    def set_language(self, language):
+        if language == "lua":
+            self.setLexer(self.lua_lexer)
+        elif language == "python":
+            self.setLexer(self.python_lexer)
+        
+        self.recolor()
 
     def keyPressEvent(self, event):
         char = event.text()

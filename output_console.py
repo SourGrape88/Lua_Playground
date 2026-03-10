@@ -2,6 +2,9 @@
 from PyQt6.QtWidgets import QPlainTextEdit
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtGui import QTextCursor
+
+from language_runner import LanguageRunner
+
 import subprocess
 import os
 
@@ -42,6 +45,12 @@ class OutputConsole(QPlainTextEdit):
 
         # Show Initial Prompt
         self.prompt()
+
+        # Language Runner
+        self.runner = LanguageRunner()
+        self.language = "lua" # Default Language
+        self.runner.lua_runtime = getattr(self, "lua_runtime", None)
+        self.runner.canvas = getattr(self, "lua_runtime", None)
 
     def prompt(self):
         """Show Terminal Prompt"""
@@ -95,20 +104,13 @@ class OutputConsole(QPlainTextEdit):
             return
         
         # ---- Try Lua Execution ----
-        if hasattr(self, "lua_runtime"):
-
-            try:
-                result = self.lua_runtime.execute(command)
-
-                if result:
-                    self.log(str(result))
-                
-                self.prompt()
-                return
-            
-            except Exception:
-                pass
-
+        if hasattr(self, "runner"):
+            output = self.runner.execute(self.language, command, cwd=self.cwd)
+            if output:
+                self.log(output)   
+            self.prompt()
+            return
+       
         # ---- Run Shell Commands (git, ls, etc) ----
         self.thread = CommandThread(command, self.cwd)
         self.thread.output.connect(self.log)

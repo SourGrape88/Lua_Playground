@@ -1,6 +1,6 @@
 # ------------EDITOR_TABS.PY----------------
 from PyQt6.QtWidgets import QTabWidget
-from code_editor import LuaEditor
+from code_editor import CodeEditor
 
 class EditorTabs(QTabWidget):
     def __init__(self, parent=None):
@@ -14,7 +14,7 @@ class EditorTabs(QTabWidget):
         self.new_tab("Main.lua")
 
     def new_tab(self, filename="Untitled.lua", filepath=None):
-        editor = LuaEditor()
+        editor = CodeEditor()
 
         # Store File Path on the editor
         editor.filepath = filepath

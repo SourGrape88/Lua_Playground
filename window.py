@@ -9,7 +9,7 @@ from PyQt6.QtCore import QTimer, Qt
 
 # Modules ---------------------
 from graphics_canvas import Canvas
-from code_editor import LuaEditor
+from code_editor import CodeEditor
 from editor_tabs import EditorTabs
 from status_indicator import StatusIndicator
 from output_console import OutputConsole
@@ -46,6 +46,7 @@ class MainWindow(QMainWindow):
         # Adds the Output Console
         self.console = OutputConsole()
         self.console.lua_runtime = self.lua
+        self.console.runner.canvas = self.canvas
         self.console.log("Hello Byron!")
         #self.console.run_terminal_command("lua -v")
 
@@ -74,6 +75,11 @@ class MainWindow(QMainWindow):
         file_menu.addAction("Restart IDE", self.restart_ide)
         #menu_bar.addMenu(file_menu)
         #self.setMenuBar(menu_bar)
+
+        # Language Menu
+        language_menu = self.menu_bar.addMenu("Language")
+        language_menu.addAction("Lua", lambda: self.set_language("lua"))
+        language_menu.addAction("Python", lambda: self.set_language("python"))
 
         # Layouts -----------------------------------------
         
@@ -168,7 +174,7 @@ class MainWindow(QMainWindow):
             # Clear Previous Lua Draw Commands
             self.canvas.lua_draw_commands.clear()
             # Execute New Lua Code
-            self.console.log("Running Lua Script...\n")
+            self.console.log("Running Script...\n")
             self.lua.execute(code)
             # Start "Finished" Status Light
             #self.status_indicator.set_finished()
@@ -186,6 +192,11 @@ class MainWindow(QMainWindow):
     def handle_explorer_click(self, index):
         filepath = self.file_explorer.filepath_from_index(index)
         self.file_manager.open_file_from_explorer(filepath)
+    
+    def set_language(self, language):
+        """Change the Active Scripting Language"""
+        self.console.language = language
+        self.console.log(f"Language Set to: {language}")
 
     def restart_ide(self):
         """Restart the IDE by Launching a New Python Process for this Script"""
