@@ -49,8 +49,6 @@ class LSPClient:
                 body = self.proc.stdout.read(length).decode("utf-8")
                 data = json.loads(body)
                 
-                print("LSP Message:", data)
-                
                 self.queue.put(data)
 
     def initialize(self):
@@ -93,9 +91,22 @@ class LSPClient:
         }
         self.send(req)
 
-    def get_response(self, timeout=0.1):
+    def request_semantic_tokens(self):
+        req = {
+            "jsonrpc": "2.0",
+            "id": self._next_id(),
+            "method": "textDocument/semanticTokens/full",
+            "params": {
+                "textDocument": {
+                    "uri": "file://dummy.lua"
+                }
+            }
+        }
+        self.send(req)
+
+    def get_response(self):
         """Non-Blocking get from the Response Queue"""
         try:
-            return self.queue.get(timeout=timeout)
+            return self.queue.get_nowait()
         except queue.Empty:
             return None

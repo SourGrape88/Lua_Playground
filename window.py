@@ -89,8 +89,11 @@ class MainWindow(QMainWindow):
         language_menu.addAction("Lua", lambda: self.set_language("lua"))
         language_menu.addAction("Python", lambda: self.set_language("python"))
 
-        # Layouts -----------------------------------------
-        
+        # ---- LSP Polling Timer -----
+        self.lsp_timer = QTimer()
+        self.lsp_timer.timeout.connect(self.process_lsp_messages)
+        self.lsp_timer.start(150)
+
         # ---- Central Widget ----
         central = QWidget()
         central_layout = QVBoxLayout()
@@ -205,6 +208,9 @@ class MainWindow(QMainWindow):
 
         self.tabs.new_tab(filename=filename, lsp_client=lsp, language=language)
 
+        if lsp:
+            lsp.request_semantic_tokens()
+
     def reset_status(self):
         self.status_indicator.set_idle()
 
@@ -221,8 +227,42 @@ class MainWindow(QMainWindow):
             if language == "lua":
                 editor.lsp_client = self.lua_client
             elif language == "python":
-                editor.lsp_client = self.py_client
+                editor.lsp_client = self.python_client
         self.console.log(f"Language Set to: {language}")
+
+    def process_lsp_messages(self):
+        """Check Both LSP Clients for New Messages"""
+        for client in [self.lua_client, self.python_client]:
+            while True:
+                response = client.get_response()
+
+                if not response:
+                    break
+                # Handle Semantic Tokens
+                if "result" in response and isinstance(response["result"], dict):
+                    if "data" in response["result"]:
+                        self.apply_semantic_tokens(response["result"]["data"])
+
+    def apply_semantic_tokens(self, data):
+        editor = self.tabs.current_editor()
+        if not editor:
+            return
+        
+        line = 0
+        column = 0
+
+        for i in range(0, len(data), 5):
+            delta_line = data[i]
+            delta_start = data[i+1]
+            length = data[i+2]
+            token_type_index = data[i+3]
+            token_type = editor.semantic_token_types[token_type_index]
+
+            line += delta_line
+            column = column + delta_start if delta_line == 0 else delta_start
+
+            start_pos = editor.positionFromLineIndex(line, column)
+            editor.apply_semantic_token(start_pos, length, token_type)
 
     def restart_ide(self):
         """Restart the IDE by Launching a New Python Process for this Script"""

@@ -15,6 +15,10 @@ class EditorTabs(QTabWidget):
 
     def new_tab(self, filename="Untitled.lua", filepath=None, lsp_client=None, language="lua"):
         editor = CodeEditor()
+        editor.setText("print('Hello World')")
+        editor.apply_semantic_token(start_pos=6, length=5, token_type="keyword")
+        # Test Semantic Color
+        editor.apply_semantic_token(start_pos=0, length=5, token_type="class")
 
         # Store File Path on the editor
         editor.filepath = filepath
