@@ -15,7 +15,7 @@ def highlight_python(editor):
 
     # Reset styling
     editor.SendScintilla(editor.SCI_STARTSTYLING, 0, 31)
-    editor.SendScintilla(editor.SCI_SETSTYLING, len(text), editor.semantic_styles.get("default", 1))
+    editor.SendScintilla(editor.SCI_SETSTYLING, editor.length(), editor.semantic_styles.get("default", 1))
 
     # Comments first (so they override other tokens)
     for match in re.finditer(comments, text):
@@ -74,7 +74,7 @@ def highlight_lua(editor):
 
     # Reset styling
     editor.SendScintilla(editor.SCI_STARTSTYLING, 0, 31)
-    editor.SendScintilla(editor.SCI_SETSTYLING, len(text), editor.semantic_styles.get("default", 1))
+    editor.SendScintilla(editor.SCI_SETSTYLING, editor.length(), editor.semantic_styles.get("default", 1))
 
     # Apply token colors
     for pattern, token_type in [

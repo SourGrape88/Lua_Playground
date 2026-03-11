@@ -92,7 +92,7 @@ class CodeEditor(QsciScintilla):
             self.python_lexer.setColor(QColor(red), style)
 
         #self.lua_lexer.setDefaultPaper(QColor(red))
-        self.textChanged.connect(self.on_text_changed)
+        #self.textChanged.connect(self.on_text_changed)
         
         self.python_lexer.setDefaultPaper(QColor(red))
 
@@ -186,10 +186,10 @@ class CodeEditor(QsciScintilla):
     def set_language(self, language):
         self.language = language
         if language == "lua":
-            self.setLexer(self.lua_lexer)
+            self.setLexer(None)
             highlight_lua(self)
         elif language == "python":
-            self.setLexer(self.python_lexer)
+            self.setLexer(None)
             highlight_python(self)
         
         self.recolor()
@@ -210,25 +210,30 @@ class CodeEditor(QsciScintilla):
             super().keyPressEvent(event)
 
     def apply_semantic_token(self, start_pos, length, token_type):
-        #style = self.semantic_styles.get(token_type, 1)  # fallback style
-        default_style = self.semantic_styles["default"]
+        
+        # Temp Code --------------
+
+        style = self.semantic_styles.get(token_type, 1)  # fallback style
+        #default_style = self.semantic_styles["default"]
         # Red Background
-        bg_color = QColor("#E31815")
-        bg_rgb = bg_color.blue() << 16 | bg_color.green() << 8 | bg_color.red()
-        self.SendScintilla(self.SCI_STYLESETBACK, default_style, bg_rgb)
+        #bg_color = QColor("#E31815")
+        #bg_rgb = bg_color.blue() << 16 | bg_color.green() << 8 | bg_color.red()
+        #self.SendScintilla(self.SCI_STYLESETBACK, default_style, bg_rgb)
 
         # Apply Semantic Style for Foreground (Text Color)
-        style = self.semantic_styles.get(token_type, default_style)
+        #style = self.semantic_styles.get(token_type, default_style)
 
         # Ensure the Foreground color is correct
-        token_color = QColor(self.TOKEN_COLORS.get(token_type, "#FFFFFF"))
-        rgb = token_color.blue() << 16 | token_color.green() << 8 | token_color.red()
-        self.SendScintilla(self.SCI_STYLESETFORE, style, rgb)
+        #token_color = QColor(self.TOKEN_COLORS.get(token_type, "#FFFFFF"))
+        #rgb = token_color.blue() << 16 | token_color.green() << 8 | token_color.red()
+        #self.SendScintilla(self.SCI_STYLESETFORE, style, rgb)
+
+        # Temp Code ----------
 
         # Apply styling: keep background as default style, foreground as semantic style
-        for i in range(length):
-            self.SendScintilla(self.SCI_STARTSTYLING, start_pos, 31)
-            # Set each character with the semantic style
-            self.SendScintilla(self.SCI_SETSTYLING, length, style)
+        #for i in range(length):
+        self.SendScintilla(self.SCI_STARTSTYLING, start_pos, 31)
+        # Set each character with the semantic style
+        self.SendScintilla(self.SCI_SETSTYLING, length, style)
 
         
