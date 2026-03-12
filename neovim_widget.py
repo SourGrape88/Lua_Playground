@@ -148,3 +148,37 @@ class NeovimWidget(QWidget):
             }[key]
         if hasattr(self, 'nvim'):
             self.nvim.async_call(lambda seq=seq: self.nvim.input(seq))
+
+
+    def resizeEvent(self, event):
+        font = QFont("Cascadia Code", 11)
+        metrics = self.fontMetrics()
+        cell_w = metrics.horizontalAdvance("M")
+        cell_h = metrics.height()
+
+        # calculate new cols/rows
+        new_cols = max(10, min(200, self.width() // cell_w))
+        new_rows = max(5, min(100, self.height() // cell_h))
+
+        # only resize Neovim if it actually changed
+        if hasattr(self, "nvim") and (new_cols != self.cols or new_rows != self.rows):
+            self.cols = new_cols
+            self.rows = new_rows
+            
+            # Resize the grid to avoid IndexError
+            old_grid =self.grid
+
+            self.grid = [[" "] * self.cols for _ in range(self.rows)]
+            for r in range(min(len(old_grid), self.rows)):
+                for c in range(min(len(old_grid[0]), self.cols)):
+                    self.grid[r][c] = old_grid[r][c]
+            
+            try:
+                def resize_and_redraw():
+                    self.nvim.ui_try_resize(self.cols, self.rows)
+                    self.nvim.redraw()  # <-- force immediate redraw
+                self.nvim.async_call(resize_and_redraw)
+            except Exception as e:
+                print("Resize failed:", e)
+
+        return super().resizeEvent(event)
