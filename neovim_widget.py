@@ -8,7 +8,6 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor, QFont
 from PyQt6.QtCore import Qt, QMetaObject
 
-
 class NeovimWidget(QWidget):
 
     def __init__(self):
@@ -18,6 +17,7 @@ class NeovimWidget(QWidget):
         self.rows = 20
 
         self.grids = {}
+        self.active_grid = 1 # Default to Main Grid
         self.hl_attrs = {}
 
         self.cursor_row = 0
@@ -98,6 +98,7 @@ class NeovimWidget(QWidget):
 
             elif event_name == "grid_cursor_goto":
                 grid, row, col = event_args[0]
+                self.active_grid = grid
                 self.cursor_row = row
                 self.cursor_col = col
 
@@ -220,22 +221,18 @@ class NeovimWidget(QWidget):
 
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(30,30,30))
-
         painter.setFont(QFont("Cascadia Code", 11))
-
         metrics = painter.fontMetrics()
-
         cell_w = metrics.horizontalAdvance("M")
         cell_h = metrics.height()
 
         for grid in self.grids.values():
-
             chars = grid["chars"]
             hl = grid["hl"]
-
             grid_row = grid["row"]
             grid_col = grid["col"]
 
+            # Draw the Text Grid
             for r in range(grid["height"]):
                 for c in range(grid["width"]):
 
@@ -246,18 +243,18 @@ class NeovimWidget(QWidget):
                     painter.fillRect(x, y, cell_w, cell_h, bg)
 
                     ch = chars[r][c]
-
                     if ch.strip():
                         painter.setPen(fg)
                         painter.drawText(x, y + cell_h, ch)
 
-            painter.fillRect(
-                self.cursor_col*cell_w,
-                self.cursor_row*cell_h,
-                cell_w,
-                cell_h,
-                QColor(200,200,255,120)
-            )
+            if grid is self.grids.get(self.active_grid):
+                painter.fillRect(
+                    (grid_col + self.cursor_col) * cell_w,
+                    (grid_row + self.cursor_row) * cell_h,
+                    cell_w,
+                    cell_h,
+                    QColor(200,200,255,120)
+                )
 
 
     def keyPressEvent(self, event):
