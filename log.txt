@@ -1,0 +1,202 @@
+
+sourcing "nvim_exec2()"
+finished sourcing nvim_exec2()
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim
+sourcing "C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua"
+line 0: sourcing "nvim_exec2() called at C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua:0"
+finished sourcing nvim_exec2() called at C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua:0
+continuing in C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua
+finished sourcing C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua"
+line 0: sourcing "nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0"
+not found in runtime path: "ftdetect/*.{vim,lua}"
+finished sourcing nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim"
+line 20: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim"
+not found in 'packpath': "pack/*/start/matchit"
+line 3: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim"
+not found in 'packpath': "pack/*/start/netrw"
+line 7: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\rplugin.vim"
+  1: ~\Desktop\Projects\Lua_Playground\vim\_defaults.lua
+  2: ~\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+  3: ~\scoop\apps\neovim\current\share\nvim\runtime\indent.vim
+  4: ~\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua
+  5: ~\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+  6: ~\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+  7: ~\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim
+  8: ~\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim
+  9: ~\scoop\apps\neovim\current\share\nvim\runtime
+sourcing "nvim_exec2()"
+finished sourcing nvim_exec2()
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim
+sourcing "C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init.lua"
+                                                                              Error detected while processing C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init.lua:
+E5113: Error while calling lua chunk: ...ner\Desktop\Projects\Lua_Playground\nvim_config\init.lua:14: module 'configs.lazy' not found:
+	no field package.preload['configs.lazy']
+	no file '.\configs\lazy.lua'
+	no file 'C:\Users\Owner\scoop\apps\neovim\current\bin\lua\configs\lazy.lua'
+	no file 'C:\Users\Owner\scoop\apps\neovim\current\bin\lua\configs\lazy\init.lua'
+	no file 'C:\Users\Owner\scoop\apps\lua\current\bin'
+	no file 'C:\Users\Owner\scoop\apps\lua\current\bin'
+stack traceback:
+	[C]: in function 'require'
+	...ner\Desktop\Projects\Lua_Playground\nvim_config\init.lua:14: in main chunk
+finished sourcing C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua"
+line 0: sourcing "nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0"
+not found in runtime path: "ftdetect/*.{vim,lua}"
+finished sourcing nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim"
+line 20: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim"
+not found in 'packpath': "pack/*/start/matchit"
+line 3: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim"
+not found in 'packpath': "pack/*/start/netrw"
+line 7: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\rplugin.vim"
+  1: ~\Desktop\Projects\Lua_Playground\vim\_defaults.lua
+  2: ~\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+  
+sourcing "nvim_exec2()"
+finished sourcing nvim_exec2()
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim
+sourcing "C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init.lua"
+                                                                              Error detected while processing C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init.lua:
+E5113: Error while calling lua chunk: ...ner\Desktop\Projects\Lua_Playground\nvim_config\init.lua:14: module 'configs.lazy' not found:
+	no field package.preload['configs.lazy']
+	no file '.\configs\lazy.lua'
+	no file 'C:\Users\Owner\scoop\apps\neovim\current\bin\lua\configs\lazy.lua'
+	no file 'C:\Users\Owner\scoop\apps\neovim\current\bin\lua\configs\lazy\init.lua'
+	no file 'C:\Users\Owner\scoop\apps\lua\current\bin'
+	no file 'C:\Users\Owner\scoop\apps\lua\current\bin'
+stack traceback:
+	[C]: in function 'require'
+	...ner\Desktop\Projects\Lua_Playground\nvim_config\init.lua:14: in main chunk
+finished sourcing C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua"
+line 0: sourcing "nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0"
+not found in runtime path: "ftdetect/*.{vim,lua}"
+finished sourcing nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+
+sourcing "nvim_exec2()"
+finished sourcing nvim_exec2()
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\indent.vim
+sourcing "C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua"
+line 0: sourcing "nvim_exec2() called at C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua:0"
+                                                                                                                   init_min loaded
+finished sourcing nvim_exec2() called at C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua:0
+continuing in C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua
+finished sourcing C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua"
+line 0: sourcing "nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0"
+not found in runtime path: "ftdetect/*.{vim,lua}"
+finished sourcing nvim_exec2() called at C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua:0
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim"
+line 20: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim"
+not found in 'packpath': "pack/*/start/matchit"
+line 3: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim"
+not found in 'packpath': "pack/*/start/netrw"
+line 7: sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim
+continuing in C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\rplugin.vim"
+  1: ~\Desktop\Projects\Lua_Playground\vim\_defaults.lua
+  2: ~\scoop\apps\neovim\current\share\nvim\runtime\ftplugin.vim
+  3: ~\scoop\apps\neovim\current\share\nvim\runtime\indent.vim
+  4: ~\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua
+  5: ~\scoop\apps\neovim\current\share\nvim\runtime\filetype.lua
+  6: ~\scoop\apps\neovim\current\share/nvim/runtime/syntax/syntax.vim
+  7: ~\scoop\apps\neovim\current\share\nvim\runtime\syntax\synload.vim
+  8: ~\scoop\apps\neovim\current\share\nvim\runtime\plugin\gzip.vim
+  9: ~\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchit.vim
+ 10: ~\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\matchit\plugin\matchit.vim
+ 11: ~\scoop\apps\neovim\current\share\nvim\runtime\plugin\matchparen.vim
+ 12: ~\scoop\apps\neovim\current\share\nvim\runtime\plugin\netrwPlugin.vim
+ 13: ~\scoop\apps\neovim\current\share\nvim\runtime\pack\dist\opt\netrw\plugin\netrwPlugin.vim
+ 14: ~\scoop\apps\neovim\current\share\nvim\runtime\plugin\rplugin.vim
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\rplugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\shada.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\shada.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\spellfile.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\spellfile.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\tarPlugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\tarPlugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\tutor.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\tutor.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\zipPlugin.vim"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\zipPlugin.vim
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\editorconfig.lua"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\editorconfig.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\man.lua"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\man.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\osc52.lua"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\osc52.lua
+sourcing "C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\tohtml.lua"
+finished sourcing C:\Users\Owner\scoop\apps\neovim\current\share\nvim\runtime\plugin\tohtml.lua
+not found in 'packpath': "pack/*/start/*"
+not found in 'packpath': "start/*"
+not found in runtime path: "plugin/**/*"
+Reading ShaDa file "C:\Users\Owner\AppData\Local\nvim-data\shada\main.shada" info marks oldfiles
+E138: All C:\Users\Owner\AppData\Local\nvim-data\shada\main.shada.tmp.X files exist, cannot write ShaDa file!

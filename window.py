@@ -17,6 +17,7 @@ from file_explorer import FileExplorer
 from file_manager import FileManager
 from overlay_widget import HolographicOverlay
 from lsp_manager import LSPClient
+from neovim_widget import NeovimWidget
 
 from lupa import LuaRuntime
 
@@ -39,7 +40,7 @@ class MainWindow(QMainWindow):
         # Pass Lua to Canvas
         self.canvas = Canvas(self.lua)
         # Adds Editor_tabs File
-        self.tabs = EditorTabs()
+        self.nvim_editor = NeovimWidget()
         self.new_tab_button = QPushButton("New Tab")
         self.new_tab_button.clicked.connect(lambda: self.create_new_editor_tab(language=self.console.language))
 
@@ -59,7 +60,7 @@ class MainWindow(QMainWindow):
         #self.console.run_terminal_command("lua -v")
 
         # Add File Manager from file_manager.py
-        self.file_manager = FileManager(self.tabs, self.console)
+        self.file_manager = FileManager(None, self.console)
 
         # Ctrl + s "Save" Shortcut
         self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
@@ -104,7 +105,7 @@ class MainWindow(QMainWindow):
         # Splitter for File Explorer, Code Editor, And Canvas (top Section)
         splitter = QSplitter()
         splitter.addWidget(self.file_explorer) # Left = File Explorer
-        splitter.addWidget(self.tabs) # Middle = Editor Tabs
+        splitter.addWidget(self.nvim_editor) # Middle = Editor Tabs
         splitter.addWidget(self.canvas) # Right = Canvas
         splitter.setSizes([50, 500, 500]) # Set Size for File Explorer, Code Editor, and Canvas
         central_layout.addWidget(splitter)
@@ -166,12 +167,8 @@ class MainWindow(QMainWindow):
 
     def run_lua_code(self):
         # Placeholder for now: Just print Editor Text to Console
-        editor = self.tabs.current_editor()
-        if editor is None:
-            self.console.log("No Editor Open to Run Code.")
-            return
-        
-        code = editor.text()
+    
+        code = ""
         # Clear Console Before Running
         self.console.clear_console()
         
@@ -197,19 +194,8 @@ class MainWindow(QMainWindow):
             self.console.log("-------------------")
             self.status_indicator.set_error()
 
-    def create_new_editor_tab(self, filename="Untitled.lua", language="lua"):
-        """Create a new tab and assign the correct LSP client."""
-        if language == "lua":
-            lsp = self.lua_client
-        elif language == "python":
-            lsp = self.python_client
-        else:
-            lsp = None
-
-        self.tabs.new_tab(filename=filename, lsp_client=lsp, language=language)
-
-        if lsp:
-            lsp.request_semantic_tokens()
+    def create_new_editor_tab(self, *args, **kwargs):
+        pass
 
     def reset_status(self):
         self.status_indicator.set_idle()
@@ -221,13 +207,7 @@ class MainWindow(QMainWindow):
     def set_language(self, language):
         """Change the Active Scripting Language"""
         self.console.language = language
-        editor = self.tabs.current_editor()
-        if editor:
-            editor.set_language(language)
-            if language == "lua":
-                editor.lsp_client = self.lua_client
-            elif language == "python":
-                editor.lsp_client = self.python_client
+        #editor = self.tabs.current_editor()
         self.console.log(f"Language Set to: {language}")
 
     def process_lsp_messages(self):
@@ -244,25 +224,27 @@ class MainWindow(QMainWindow):
                         self.apply_semantic_tokens(response["result"]["data"])
 
     def apply_semantic_tokens(self, data):
-        editor = self.tabs.current_editor()
-        if not editor:
-            return
+        pass
         
-        line = 0
-        column = 0
+        #editor = self.tabs.current_editor()
+        #if not editor:
+            #return
+        
+        #line = 0
+        #column = 0
 
-        for i in range(0, len(data), 5):
-            delta_line = data[i]
-            delta_start = data[i+1]
-            length = data[i+2]
-            token_type_index = data[i+3]
-            token_type = editor.semantic_token_types[token_type_index]
+        #for i in range(0, len(data), 5):
+            #delta_line = data[i]
+            #delta_start = data[i+1]
+            #length = data[i+2]
+            #token_type_index = data[i+3]
+            #token_type = editor.semantic_token_types[token_type_index]
 
-            line += delta_line
-            column = column + delta_start if delta_line == 0 else delta_start
+            #line += delta_line
+            #column = column + delta_start if delta_line == 0 else delta_start
 
-            start_pos = editor.positionFromLineIndex(line, column)
-            editor.apply_semantic_token(start_pos, length, token_type)
+            #start_pos = editor.positionFromLineIndex(line, column)
+            #editor.apply_semantic_token(start_pos, length, token_type)
 
     def restart_ide(self):
         """Restart the IDE by Launching a New Python Process for this Script"""
