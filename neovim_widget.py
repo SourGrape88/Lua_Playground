@@ -147,4 +147,4 @@ class NeovimWidget(QWidget):
                 Qt.Key.Key_Escape: "<Esc>",
             }[key]
         if hasattr(self, 'nvim'):
-            self.nvim.async_call(lambda nvim, seq=seq: nvim.input(seq))
+            self.nvim.async_call(lambda seq=seq: self.nvim.input(seq))
