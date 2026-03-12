@@ -18,6 +18,8 @@ class NeovimWidget(QWidget):
         self.cols = 60
 
         self.grid = [[" "] * self.cols for _ in range(self.rows)]
+        self.hl_attrs = {}
+        self.hl_grid = [[(QColor(220,220,220), QColor(30,30,30)) for _ in range(self.cols)] for _ in range(self.rows)]
 
         self.cursor_row = 0
         self.cursor_col = 0
@@ -75,7 +77,15 @@ class NeovimWidget(QWidget):
             event_name = event[0]
             event_args = event[1:]
             
-            if event_name not in ("grid_line", "hl_attr_define", "grid_cursor_goto", "grid_clear"):
+            if event_name == "hl_attr_define":
+                for attr in event_args:
+                    hl_id, hl_info = attr[0], attr[1]
+                    # hl_info might have "foreground", "background", "special", "reverse", etc.
+                    fg = QColor(*hl_info.get("foreground_rgb", (220,220,220)))
+                    bg = QColor(*hl_info.get("background_rgb", (30,30,30)))
+                    self.hl_attrs[hl_id] = (fg, bg)
+            
+            if event_name not in ("grid_line", "hl_attr_define", "grid_cursor_goto", "grid_clear", "grid_scroll"):
                 #print("Event:", event_name, event_args)
                 pass
             if event_name == "grid_line":
@@ -88,6 +98,9 @@ class NeovimWidget(QWidget):
 
             elif event_name == "grid_clear":
                 self.grid = [[" "] * self.cols for _ in range(self.rows)]
+
+            elif event_name == "grid_scroll":
+                self.handle_grid_scroll(event_args)
 
             else:
                 pass  # e.g., hl_attr_define, option_set, default_colors_set, etc.
@@ -112,7 +125,9 @@ class NeovimWidget(QWidget):
 
                     if 0 <= row < self.rows and 0 <= col < self.cols:
                         self.grid[row][col] = char
-
+                        hl_id = cell[1] if len(cell) > 1 else None
+                        fg, bg = self.hl_attrs.get(hl_id, (QColor(220,220,220), QColor(30,30,30)))
+                        self.hl_grid[row][col] = (fg, bg)
                     col += 1
 
     def paintEvent(self, event):
@@ -127,8 +142,14 @@ class NeovimWidget(QWidget):
         for r in range(self.rows):
             for c in range(self.cols):
                 char = self.grid[r][c]
+                if r < len(self.hl_grid) and c < len(self.hl_grid[r]):
+                    fg, bg = self.hl_grid[r][c]
+                else:
+                    fg, bg = QColor(220, 220, 220), QColor(30, 30, 30)
+                painter.fillRect(c*cell_w, r*cell_h, cell_w, cell_h, bg)
                 if char.strip() != "":
-                    painter.setPen(QColor(220,220,220))
+                    #painter.setPen(QColor(220,220,220))
+                    painter.setPen(fg)
                     painter.drawText(c*cell_w, (r+1)*cell_h, char)
 
         # cursor
@@ -167,18 +188,42 @@ class NeovimWidget(QWidget):
             
             # Resize the grid to avoid IndexError
             old_grid =self.grid
+            old_hl_grid = self.hl_grid
 
             self.grid = [[" "] * self.cols for _ in range(self.rows)]
+            self.hl_grid = [[(QColor(220,220,220), QColor(30,30,30)) for _ in range(self.cols)] for _ in range(self.rows)]
             for r in range(min(len(old_grid), self.rows)):
                 for c in range(min(len(old_grid[0]), self.cols)):
                     self.grid[r][c] = old_grid[r][c]
+                    self.hl_grid[r][c] = old_hl_grid[r][c]
             
             try:
                 def resize_and_redraw():
                     self.nvim.ui_try_resize(self.cols, self.rows)
-                    self.nvim.redraw()  # <-- force immediate redraw
+                    #self.nvim.redraw()  # <-- force immediate redraw
                 self.nvim.async_call(resize_and_redraw)
             except Exception as e:
                 print("Resize failed:", e)
 
         return super().resizeEvent(event)
+
+    def handle_grid_scroll(self, args):
+
+        for scroll in args:
+            grid, top, bottom, left, right, rows, cols = scroll
+
+            # vertical scroll
+            if rows != 0:
+                if rows > 0:  # scroll down
+                    for r in range(bottom - 1, top - 1, -1):
+                        src = r - rows
+                        if src >= top:
+                            self.grid[r][left:right] = self.grid[src][left:right]
+                            self.hl_grid[r][left:right] = self.hl_grid[src][left:right]
+                else:  # scroll up
+                    for r in range(top, bottom):
+                        src = r - rows
+                        if src < bottom:
+                            self.grid[r][left:right] = self.grid[src][left:right]
+                            self.hl_grid[r][left:right] = self.hl_grid[src][left:right]
+
