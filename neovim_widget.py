@@ -14,12 +14,11 @@ class NeovimWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.rows = 20
         self.cols = 60
+        self.rows = 20
 
-        self.grid = [[" "] * self.cols for _ in range(self.rows)]
+        self.grids = {}
         self.hl_attrs = {}
-        self.hl_grid = [[(QColor(220,220,220), QColor(30,30,30)) for _ in range(self.cols)] for _ in range(self.rows)]
 
         self.cursor_row = 0
         self.cursor_col = 0
@@ -30,20 +29,23 @@ class NeovimWidget(QWidget):
 
         self._start_nvim()
 
+
     def _start_nvim(self):
 
         nvim_exe = r"C:\Users\Owner\scoop\apps\neovim\current\bin\nvim.exe"
         init_lua = r"C:\Users\Owner\Desktop\Projects\Lua_Playground\nvim_config\init_min.lua"
+
         subprocess.Popen([
             nvim_exe,
             "--headless",
             "--listen", self.pipe_name,
             "-u", init_lua
-        ]) #creationflags=subprocess.CREATE_NEW_CONSOLE)
+        ])
 
         start = time.time()
         timeout = 10
-        while not os.path.exists(rf"\\.\pipe\my_nvim{os.getpid()}"):
+
+        while not os.path.exists(self.pipe_name):
             if time.time() - start > timeout:
                 raise RuntimeError("Neovim pipe not created in time!")
             time.sleep(0.05)
@@ -58,14 +60,14 @@ class NeovimWidget(QWidget):
             ext_hlstate=True
         )
 
-        # Run_loop in a seperaet thread
         threading.Thread(
             target=lambda: self.nvim.run_loop(
-            request_cb=None,
-            notification_cb=self.nvim_notification
-        ),
-        daemon=True
+                request_cb=None,
+                notification_cb=self.nvim_notification
+            ),
+            daemon=True
         ).start()
+
 
     def nvim_notification(self, name, args):
 
@@ -76,19 +78,22 @@ class NeovimWidget(QWidget):
 
             event_name = event[0]
             event_args = event[1:]
-            
+
             if event_name == "hl_attr_define":
+
                 for attr in event_args:
-                    hl_id, hl_info = attr[0], attr[1]
-                    # hl_info might have "foreground", "background", "special", "reverse", etc.
-                    fg = QColor(*hl_info.get("foreground_rgb", (220,220,220)))
-                    bg = QColor(*hl_info.get("background_rgb", (30,30,30)))
+                    hl_id, info = attr[0], attr[1]
+
+                    fg = QColor(*info.get("foreground_rgb", (220,220,220)))
+                    bg = QColor(*info.get("background_rgb", (30,30,30)))
+
                     self.hl_attrs[hl_id] = (fg, bg)
-            
-            if event_name not in ("grid_line", "hl_attr_define", "grid_cursor_goto", "grid_clear", "grid_scroll"):
-                #print("Event:", event_name, event_args)
-                pass
-            if event_name == "grid_line":
+
+
+            elif event_name == "grid_resize":
+                self.handle_grid_resize(event_args)
+
+            elif event_name == "grid_line":
                 self.handle_grid_line(event_args)
 
             elif event_name == "grid_cursor_goto":
@@ -96,70 +101,180 @@ class NeovimWidget(QWidget):
                 self.cursor_row = row
                 self.cursor_col = col
 
-            elif event_name == "grid_clear":
-                self.grid = [[" "] * self.cols for _ in range(self.rows)]
-
             elif event_name == "grid_scroll":
                 self.handle_grid_scroll(event_args)
 
-            else:
-                pass  # e.g., hl_attr_define, option_set, default_colors_set, etc.
+            elif event_name == "win_pos":
+
+                grid, win, row, col, width, height = event_args[0]
+
+                if grid in self.grids:
+                    self.grids[grid]["row"] = row
+                    self.grids[grid]["col"] = col
+            
+            elif event_name == "win_float_pos":
+
+                grid, win, anchor, row, col, focusable, zindex = event_args[0]
+
+                if grid in self.grids:
+                    self.grids[grid]["row"] = int(row)
+                    self.grids[grid]["col"] = int(col)
+
+            elif event_name == "grid_clear":
+                for grid_id in event_args[0]:
+                    grid = self.grids.get(grid_id)
+                    if not grid:
+                        continue
+                    
+                    for r in range(grid["height"]):
+                        for c in range(grid["width"]):
+                            grid["chars"][r][c] = " "
 
         QMetaObject.invokeMethod(self, "update")
 
+
+    def handle_grid_resize(self, args):
+
+        for grid_id, width, height in args:
+
+            chars = [[" "] * width for _ in range(height)]
+
+            hl = [[(QColor(220,220,220), QColor(30,30,30))
+                  for _ in range(width)] for _ in range(height)]
+
+            self.grids[grid_id] = {
+                "chars": chars,
+                "hl": hl,
+                "width": width,
+                "height": height,
+                "row": 0,
+                "col": 0
+            }
+
+
     def handle_grid_line(self, args):
 
-       for line in args:  # each line is [grid, row, col, cells]
+        for line in args:
+
             if len(line) < 4:
-                continue  # skip malformed lines 
-            
-            
+                continue
+
             grid_id, row, col, cells = line[:4]
+
+            grid = self.grids.get(grid_id)
+            if not grid:
+                continue
+
+            chars = grid["chars"]
+            hl = grid["hl"]
 
             for cell in cells:
 
-                char = str(cell[0]) if len(cell) > 0 else " "
+                char = cell[0] if len(cell) > 0 else " "
+                hl_id = cell[1] if len(cell) > 1 else None
                 repeat = cell[2] if len(cell) > 2 else 1
+
+                fg, bg = self.hl_attrs.get(
+                    hl_id,
+                    (QColor(220,220,220), QColor(30,30,30))
+                )
 
                 for _ in range(repeat):
 
-                    if 0 <= row < self.rows and 0 <= col < self.cols:
-                        self.grid[row][col] = char
-                        hl_id = cell[1] if len(cell) > 1 else None
-                        fg, bg = self.hl_attrs.get(hl_id, (QColor(220,220,220), QColor(30,30,30)))
-                        self.hl_grid[row][col] = (fg, bg)
+                    if 0 <= row < grid["height"] and 0 <= col < grid["width"]:
+                        chars[row][col] = char
+                        hl[row][col] = (fg, bg)
+
                     col += 1
 
+
+    def handle_grid_scroll(self, args):
+
+        for grid_id, top, bottom, left, right, rows, cols in args:
+
+            grid = self.grids.get(grid_id)
+            if not grid:
+                continue
+
+            chars = grid["chars"]
+            hl = grid["hl"]
+
+            if rows > 0:
+
+                for r in range(bottom-1, top-1, -1):
+                    src = r - rows
+                    if src >= top:
+                        chars[r][left:right] = chars[src][left:right]
+                        hl[r][left:right] = hl[src][left:right]
+
+            elif rows < 0:
+
+                for r in range(top, bottom):
+                    src = r - rows
+                    if src < bottom:
+                        chars[r][left:right] = chars[src][left:right]
+                        hl[r][left:right] = hl[src][left:right]
+
+
     def paintEvent(self, event):
+
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(30,30,30))  # background
-        font = QFont("Cascadia Code", 11)
-        painter.setFont(font)
+        painter.fillRect(self.rect(), QColor(30,30,30))
+
+        painter.setFont(QFont("Cascadia Code", 11))
+
         metrics = painter.fontMetrics()
+
         cell_w = metrics.horizontalAdvance("M")
         cell_h = metrics.height()
 
-        for r in range(self.rows):
-            for c in range(self.cols):
-                char = self.grid[r][c]
-                if r < len(self.hl_grid) and c < len(self.hl_grid[r]):
-                    fg, bg = self.hl_grid[r][c]
-                else:
-                    fg, bg = QColor(220, 220, 220), QColor(30, 30, 30)
-                painter.fillRect(c*cell_w, r*cell_h, cell_w, cell_h, bg)
-                if char.strip() != "":
-                    #painter.setPen(QColor(220,220,220))
-                    painter.setPen(fg)
-                    painter.drawText(c*cell_w, (r+1)*cell_h, char)
+        for grid in self.grids.values():
 
-        # cursor
-        painter.fillRect(self.cursor_col*cell_w, self.cursor_row*cell_h, cell_w, cell_h, QColor(200,200,255,120))
+            chars = grid["chars"]
+            hl = grid["hl"]
+
+            grid_row = grid["row"]
+            grid_col = grid["col"]
+
+            for r in range(grid["height"]):
+                for c in range(grid["width"]):
+
+                    fg, bg = hl[r][c]
+
+                    x = (grid_col + c) * cell_w
+                    y = (grid_row + r) * cell_h
+                    painter.fillRect(x, y, cell_w, cell_h, bg)
+
+                    ch = chars[r][c]
+
+                    if ch.strip():
+                        painter.setPen(fg)
+                        painter.drawText(x, y + cell_h, ch)
+
+            painter.fillRect(
+                self.cursor_col*cell_w,
+                self.cursor_row*cell_h,
+                cell_w,
+                cell_h,
+                QColor(200,200,255,120)
+            )
+
 
     def keyPressEvent(self, event):
+
         key = event.key()
         text = event.text()
-        seq = text  # basic
-        if key in [Qt.Key.Key_Backspace, Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Tab, Qt.Key.Key_Escape]:
+
+        seq = text
+
+        if key in [
+            Qt.Key.Key_Backspace,
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter,
+            Qt.Key.Key_Tab,
+            Qt.Key.Key_Escape
+        ]:
+
             seq = {
                 Qt.Key.Key_Backspace: "<BS>",
                 Qt.Key.Key_Return: "<CR>",
@@ -167,63 +282,28 @@ class NeovimWidget(QWidget):
                 Qt.Key.Key_Tab: "<Tab>",
                 Qt.Key.Key_Escape: "<Esc>",
             }[key]
-        if hasattr(self, 'nvim'):
-            self.nvim.async_call(lambda seq=seq: self.nvim.input(seq))
+
+        if hasattr(self, "nvim"):
+            self.nvim.async_call(lambda: self.nvim.input(seq))
 
 
     def resizeEvent(self, event):
-        font = QFont("Cascadia Code", 11)
+
         metrics = self.fontMetrics()
+
         cell_w = metrics.horizontalAdvance("M")
         cell_h = metrics.height()
 
-        # calculate new cols/rows
-        new_cols = max(10, min(200, self.width() // cell_w))
-        new_rows = max(5, min(100, self.height() // cell_h))
+        cols = max(10, self.width() // cell_w)
+        rows = max(5, self.height() // cell_h)
 
-        # only resize Neovim if it actually changed
-        if hasattr(self, "nvim") and (new_cols != self.cols or new_rows != self.rows):
-            self.cols = new_cols
-            self.rows = new_rows
-            
-            # Resize the grid to avoid IndexError
-            old_grid =self.grid
-            old_hl_grid = self.hl_grid
+        if hasattr(self, "nvim") and (cols != self.cols or rows != self.rows):
 
-            self.grid = [[" "] * self.cols for _ in range(self.rows)]
-            self.hl_grid = [[(QColor(220,220,220), QColor(30,30,30)) for _ in range(self.cols)] for _ in range(self.rows)]
-            for r in range(min(len(old_grid), self.rows)):
-                for c in range(min(len(old_grid[0]), self.cols)):
-                    self.grid[r][c] = old_grid[r][c]
-                    self.hl_grid[r][c] = old_hl_grid[r][c]
-            
-            try:
-                def resize_and_redraw():
-                    self.nvim.ui_try_resize(self.cols, self.rows)
-                    #self.nvim.redraw()  # <-- force immediate redraw
-                self.nvim.async_call(resize_and_redraw)
-            except Exception as e:
-                print("Resize failed:", e)
+            self.cols = cols
+            self.rows = rows
+
+            self.nvim.async_call(
+                lambda: self.nvim.ui_try_resize(cols, rows)
+            )
 
         return super().resizeEvent(event)
-
-    def handle_grid_scroll(self, args):
-
-        for scroll in args:
-            grid, top, bottom, left, right, rows, cols = scroll
-
-            # vertical scroll
-            if rows != 0:
-                if rows > 0:  # scroll down
-                    for r in range(bottom - 1, top - 1, -1):
-                        src = r - rows
-                        if src >= top:
-                            self.grid[r][left:right] = self.grid[src][left:right]
-                            self.hl_grid[r][left:right] = self.hl_grid[src][left:right]
-                else:  # scroll up
-                    for r in range(top, bottom):
-                        src = r - rows
-                        if src < bottom:
-                            self.grid[r][left:right] = self.grid[src][left:right]
-                            self.hl_grid[r][left:right] = self.hl_grid[src][left:right]
-
