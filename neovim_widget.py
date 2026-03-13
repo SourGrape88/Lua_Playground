@@ -8,23 +8,17 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor, QFont
 from PyQt6.QtCore import Qt, QMetaObject
 
+from grid_model import GridModel
+
 class NeovimWidget(QWidget):
 
     def __init__(self):
         super().__init__()
 
+        self.model = GridModel()
+
         self.cols = 60
         self.rows = 20
-
-        self.default_fg = QColor(20, 20, 220)
-        self.default_bg = QColor(140, 30, 30)
-
-        self.grids = {}
-        self.active_grid = 1 # Default to Main Grid
-        self.hl_attrs = {}
-
-        self.cursor_row = 0
-        self.cursor_col = 0
 
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
@@ -91,10 +85,10 @@ class NeovimWidget(QWidget):
                     fg_val = rgb_attr.get("foreground")
                     bg_val = rgb_attr.get("background")
 
-                    fg = self.rgb_int_to_qcolor(fg_val) if fg_val is not None else self.default_fg
-                    bg = self.rgb_int_to_qcolor(bg_val) if bg_val is not None else self.default_bg
+                    fg = self.model.rgb_int_to_qcolor(fg_val) if fg_val is not None else self.model.default_fg
+                    bg = self.model.rgb_int_to_qcolor(bg_val) if bg_val is not None else self.model.default_bg
 
-                    self.hl_attrs[hl_id] = (fg, bg)
+                    self.model.hl_attrs[hl_id] = (fg, bg)
 
 
             elif event_name == "grid_resize":
@@ -105,9 +99,9 @@ class NeovimWidget(QWidget):
 
             elif event_name == "grid_cursor_goto":
                 grid, row, col = event_args[0]
-                self.active_grid = grid
-                self.cursor_row = row
-                self.cursor_col = col
+                self.model.active_grid = grid
+                self.model.cursor_row = row
+                self.model.cursor_col = col
 
             elif event_name == "grid_scroll":
                 self.handle_grid_scroll(event_args)
@@ -116,27 +110,27 @@ class NeovimWidget(QWidget):
 
                 grid, win, row, col, width, height = event_args[0]
 
-                if grid in self.grids:
-                    self.grids[grid]["row"] = row
-                    self.grids[grid]["col"] = col
+                if grid in self.model.grids:
+                    self.model.grids[grid]["row"] = row
+                    self.model.grids[grid]["col"] = col
             
             elif event_name == "win_float_pos":
 
                 grid, win, anchor, row, col, focusable, zindex = event_args[0]
 
-                if grid in self.grids:
-                    self.grids[grid]["row"] = int(row)
-                    self.grids[grid]["col"] = int(col)
+                if grid in self.model.grids:
+                    self.model.grids[grid]["row"] = int(row)
+                    self.model.grids[grid]["col"] = int(col)
 
             elif event_name == "default_colors_set":
 
                 fg, bg, sp, *_ = event_args[0]
 
                 if fg is not None:
-                    self.default_fg = self.rgb_int_to_qcolor(fg)
+                    self.model.default_fg = self.model.rgb_int_to_qcolor(fg)
 
                 if bg is not None:
-                    self.default_bg = self.rgb_int_to_qcolor(bg)
+                    self.model.default_bg = self.model.rgb_int_to_qcolor(bg)
                 
             elif event_name == "hl_group_set":
 
@@ -149,7 +143,7 @@ class NeovimWidget(QWidget):
 
             elif event_name == "grid_clear":
                 for grid_id in event_args[0]:
-                    grid = self.grids.get(grid_id)
+                    grid = self.model.grids.get(grid_id)
                     if not grid:
                         continue
                     
@@ -159,15 +153,6 @@ class NeovimWidget(QWidget):
 
         QMetaObject.invokeMethod(self, "update")
 
-
-    def rgb_int_to_qcolor(self, value):
-        if value is None:
-            return None
-        r = (value >> 16) & 0xFF
-        g = (value >> 8) & 0xFF
-        b = value & 0xFF
-        return QColor(r, g, b)
-
     def handle_grid_resize(self, args):
 
         for grid_id, width, height in args:
@@ -175,10 +160,10 @@ class NeovimWidget(QWidget):
             buffer_height = max(height, 1000)
 
             chars = [[" "] * width for _ in range(buffer_height)]
-            hl = [[(self.default_fg, self.default_bg)
+            hl = [[(self.model.default_fg, self.model.default_bg)
                   for _ in range(width)] for _ in range(buffer_height)]
 
-            self.grids[grid_id] = {
+            self.model.grids[grid_id] = {
                 "chars": chars,
                 "hl": hl,
                 "width": width,
@@ -192,14 +177,14 @@ class NeovimWidget(QWidget):
 
         for line in args:
             grid_id, row, col, cells = line[:4]
-            grid = self.grids.get(grid_id)
+            grid = self.model.grids.get(grid_id)
             if not grid:
                 continue
         
             # Ensure buffer can hold this row
             while row >= len(grid["chars"]):
                 grid["chars"].append([" "] * grid["width"])
-                grid["hl"].append([(self.default_fg, self.default_bg)] * grid["width"])
+                grid["hl"].append([(self.model.default_fg, self.model.default_bg)] * grid["width"])
 
             #chars = grid["chars"]
             #hl = grid["hl"]
@@ -213,9 +198,9 @@ class NeovimWidget(QWidget):
                 repeat = cell[2] if len(cell) > 2 else 1
 
                 last_hl_id = hl_id
-                fg, bg = self.hl_attrs.get(
+                fg, bg = self.model.hl_attrs.get(
                     hl_id,
-                    (self.default_fg, self.default_bg)
+                    (self.model.default_fg, self.model.default_bg)
                 )
 
                 for i in range(repeat):
@@ -231,7 +216,7 @@ class NeovimWidget(QWidget):
     
     def handle_grid_scroll(self, args):
         for grid_id, top, bottom, left, right, rows, cols in args:
-            grid = self.grids.get(grid_id)
+            grid = self.model.grids.get(grid_id)
             if not grid:
                 continue
 
@@ -251,7 +236,7 @@ class NeovimWidget(QWidget):
 
                     for r in range(bottom - rows, bottom):
                         chars[r][left:right] = [" "] * (right - left)
-                        hl[r][left:right] = [(self.default_fg, self.default_bg)] * (right - left)
+                        hl[r][left:right] = [(self.model.default_fg, self.model.default_bg)] * (right - left)
 
                 else:
                     rows = -rows
@@ -262,7 +247,7 @@ class NeovimWidget(QWidget):
 
                     for r in range(top, top + rows):
                         chars[r][left:right] = [" "] * (right - left)
-                        hl[r][left:right] = [(self.default_fg, self.default_bg)] * (right - left)
+                        hl[r][left:right] = [(self.model.default_fg, self.model.default_bg)] * (right - left)
 
     def clamp_grid_row(self, grid):
         # Ensure grid_row stays within valid buffer bounds
@@ -271,13 +256,13 @@ class NeovimWidget(QWidget):
     
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.fillRect(self.rect(), self.default_bg)
+        painter.fillRect(self.rect(), self.model.default_bg)
         painter.setFont(QFont("Cascadia Code", 11))
         metrics = painter.fontMetrics()
         cell_w = metrics.horizontalAdvance("M")
         cell_h = metrics.height()
 
-        for grid in self.grids.values():
+        for grid in self.model.grids.values():
             chars = grid["chars"]
             hl = grid["hl"]
             grid_row = grid["row"]
@@ -298,9 +283,9 @@ class NeovimWidget(QWidget):
                     painter.drawText(x, y + cell_h, char)   
 
             # Draw cursor
-            if grid is self.grids.get(self.active_grid):
-                cursor_x = self.cursor_col
-                cursor_y = self.cursor_row - grid_row  # offset in viewport
+            if grid is self.model.grids.get(self.model.active_grid):
+                cursor_x = self.model.cursor_col
+                cursor_y = self.model.cursor_row - grid_row  # offset in viewport
                 if 0 <= cursor_y < grid["height"]:
                     painter.fillRect(
                         cursor_x * cell_w,
