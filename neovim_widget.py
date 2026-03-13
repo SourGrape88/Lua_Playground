@@ -171,11 +171,12 @@ class NeovimWidget(QWidget):
     def handle_grid_resize(self, args):
 
         for grid_id, width, height in args:
+            
+            buffer_height = max(height, 1000)
 
-            chars = [[" "] * width for _ in range(height)]
-
+            chars = [[" "] * width for _ in range(buffer_height)]
             hl = [[(self.default_fg, self.default_bg)
-                  for _ in range(width)] for _ in range(height)]
+                  for _ in range(width)] for _ in range(buffer_height)]
 
             self.grids[grid_id] = {
                 "chars": chars,
@@ -190,16 +191,18 @@ class NeovimWidget(QWidget):
     def handle_grid_line(self, args):
 
         for line in args:
-            #if len(line) < 4:
-                #continue
-
             grid_id, row, col, cells = line[:4]
             grid = self.grids.get(grid_id)
             if not grid:
                 continue
+        
+            # Ensure buffer can hold this row
+            while row >= len(grid["chars"]):
+                grid["chars"].append([" "] * grid["width"])
+                grid["hl"].append([(self.default_fg, self.default_bg)] * grid["width"])
 
-            chars = grid["chars"]
-            hl = grid["hl"]
+            #chars = grid["chars"]
+            #hl = grid["hl"]
 
             current_col = col
             last_hl_id = None
@@ -217,47 +220,54 @@ class NeovimWidget(QWidget):
 
                 for i in range(repeat):
                     c_pos = current_col + i
-                    if 0 <= row < grid["height"] and 0 <= c_pos < grid["width"]:
+                    if 0 <= c_pos < grid["width"]:
                         #display_char = char if char else " "
-                        chars[row][c_pos] = char
-                        hl[row][c_pos] = (fg, bg)
+                        grid["chars"][row][c_pos] = char
+                        grid["hl"][row][c_pos] = (fg, bg)
 
                 current_col += repeat
                 print("HL ID:", hl_id)
 
-    def handle_grid_scroll(self, args):
-       for grid_id, top, bottom, left, right, rows, cols in args:
-        grid = self.grids.get(grid_id)
-        if not grid:
-            continue
-
-        chars = grid["chars"]
-        hl = grid["hl"]
-
-        width = right - left
-        height = bottom - top
-
-        # Scroll Rows
-        if rows > 0:  # scroll down
-            for r in range(bottom - 1, top - 1, -1):
-                src = r - rows
-                if top <= src < bottom:
-                    chars[r][left:right] = chars[src][left:right].copy()
-                    hl[r][left:right] = hl[src][left:right].copy()
-                else:
-                    chars[r][left:right] = [" "] * width
-                    hl[r][left:right] = [(self.default_fg, self.default_bg)] * width
-
-        elif rows < 0:  # scroll up
-            for r in range(top, bottom):
-                src = r - rows
-                if top <= src < bottom:
-                    chars[r][left:right] = chars[src][left:right].copy()
-                    hl[r][left:right] = hl[src][left:right].copy()
-                else:
-                    chars[r][left:right] = [" "] * width
-                    hl[r][left:right] = [(self.default_fg, self.default_bg)] * width 
     
+    def handle_grid_scroll(self, args):
+        for grid_id, top, bottom, left, right, rows, cols in args:
+            grid = self.grids.get(grid_id)
+            if not grid:
+                continue
+
+            chars = grid["chars"]
+            hl = grid["hl"]
+
+            # vertical scroll
+            if rows != 0:
+                region = chars[top:bottom]
+                region_hl = hl[top:bottom]
+
+                if rows > 0:
+                    # scroll up
+                    for r in range(top, bottom - rows):
+                        chars[r][left:right] = region[r - top + rows][left:right]
+                        hl[r][left:right] = region_hl[r - top + rows][left:right]
+
+                    for r in range(bottom - rows, bottom):
+                        chars[r][left:right] = [" "] * (right - left)
+                        hl[r][left:right] = [(self.default_fg, self.default_bg)] * (right - left)
+
+                else:
+                    rows = -rows
+                    # scroll down
+                    for r in range(bottom - 1, top + rows - 1, -1):
+                        chars[r][left:right] = region[r - top - rows][left:right]
+                        hl[r][left:right] = region_hl[r - top - rows][left:right]
+
+                    for r in range(top, top + rows):
+                        chars[r][left:right] = [" "] * (right - left)
+                        hl[r][left:right] = [(self.default_fg, self.default_bg)] * (right - left)
+
+    def clamp_grid_row(self, grid):
+        # Ensure grid_row stays within valid buffer bounds
+        max_row = max(0, len(grid["chars"]) - grid["height"])
+        grid["row"] = max(0, min(grid["row"], max_row))
     
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -275,24 +285,30 @@ class NeovimWidget(QWidget):
 
             # Draw the Text Grid
             for r in range(grid["height"]):
+                buf_row = r
+                if buf_row >= len(chars):
+                    break
                 for c in range(grid["width"]):
-                    char = chars[r][c]
-                    fg, bg = hl[r][c]
-                    x = (grid_col + c) * cell_w
-                    y = (grid_row + r) * cell_h
+                    char = chars[buf_row][c]
+                    fg, bg = hl[buf_row][c]
+                    x = c * cell_w
+                    y = r * cell_h
                     painter.fillRect(x, y, cell_w, cell_h, bg)
                     painter.setPen(fg)
                     painter.drawText(x, y + cell_h, char)   
 
             # Draw cursor
             if grid is self.grids.get(self.active_grid):
-                painter.fillRect(
-                    (grid_col + self.cursor_col) * cell_w,
-                    (grid_row + self.cursor_row) * cell_h,
-                    cell_w,
-                    cell_h,
-                    QColor(200, 200, 255, 120)
-                )
+                cursor_x = self.cursor_col
+                cursor_y = self.cursor_row - grid_row  # offset in viewport
+                if 0 <= cursor_y < grid["height"]:
+                    painter.fillRect(
+                        cursor_x * cell_w,
+                        cursor_y * cell_h,
+                        cell_w,
+                        cell_h,
+                        QColor(200, 200, 255, 120)
+                    )
 
     def keyPressEvent(self, event):
 
