@@ -1,4 +1,7 @@
 # ---------NEOVIM_WIDGET.PY--------------------
+
+# Test Commit 1
+
 import os
 
 from PyQt6.QtWidgets import QWidget
