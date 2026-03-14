@@ -2,7 +2,7 @@
 
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 
 class Canvas(QWidget):
 
@@ -10,6 +10,9 @@ class Canvas(QWidget):
         super().__init__()
         self.lua = lua
         
+        # For Print Output
+        self.messages = []
+
         # Demo Python State
         self.x = 300
         self.dx = 2
@@ -27,6 +30,7 @@ class Canvas(QWidget):
         self.timer.start(16)
 
     # -------------DRAW COMMAND FUNCTIONS ------------------
+    # Circle() Function
     def draw_circle(self, x, y, r, color=(100, 200, 255)):
         """Add a Circle Command to the Draw List"""
         if color is None:
@@ -35,6 +39,7 @@ class Canvas(QWidget):
             color = tuple(color.values())
         self.lua_draw_commands.append(("circle", x, y, r, color))
 
+    # Rect() Function
     def draw_rect(self, x, y, w, h, color=(150, 70, 100)):
         """Add a Rectangle Command to the Draw List"""
         if color is None:
@@ -43,13 +48,18 @@ class Canvas(QWidget):
             color = tuple(color.values())
         self.lua_draw_commands.append(("rect", x, y, w, h, color))
 
-    # ------------------------------------------------------------
-
     # Cls() (Clear Screen) Function
     def cls(self):
         """Clear All draw commands for the next frame"""
         self.draw_commands.clear()
         self.lua_draw_commands.clear()
+
+    def print_to_canvas(self, text, color=Qt.GlobalColor.white):
+        """Display messages on the canvas"""
+        # You can maintain a list of strings for display
+        self.messages.append((str(text), color))
+        # optionally store color for each line
+        self.update()  # trigger paintEvent
 
     def update_frame(self):
 
@@ -123,3 +133,10 @@ class Canvas(QWidget):
                 _, x, y, w, h, color = cmd
                 painter.setBrush(QColor(*color))
                 painter.drawRect(x, y, w, h)
+
+        # Draw printed messages
+        y = 20
+        for msg, color in self.messages[-20:]:  # show last 20 lines
+            painter.setPen(QColor(color))
+            painter.drawText(10, y, msg)
+            y += 20
