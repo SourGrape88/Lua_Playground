@@ -1,8 +1,8 @@
 # ---------NEOVIM_WIDGET.PY--------------------
 
-# Test Commit 1
+# Test Commit 2
 
-import os
+import os, math
 
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor, QFont
@@ -20,8 +20,8 @@ class NeovimWidget(QWidget):
         self.model = GridModel()
         self.redraw = RedrawHandler(self.model)
 
-        self.cols = 60
-        self.rows = 20
+        self.cols = 1
+        self.rows = 1
 
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
@@ -39,6 +39,8 @@ class NeovimWidget(QWidget):
             self.rows,
             init_lua
         )
+
+        self.adjust_grid_to_widget()
 
     def nvim_notification(self, name, args):
 
@@ -197,31 +199,31 @@ class NeovimWidget(QWidget):
 
 
     def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.adjust_grid_to_widget()
+
+    def adjust_grid_to_widget(self):
+        """Resize the Neovim grid to fill the widget completely"""
         metrics = self.fontMetrics()
         cell_w = metrics.horizontalAdvance("M")
         cell_h = metrics.height()
 
-        # Compute visible rows/cols to fit the widget
-        visible_cols = max(10, self.width() // cell_w)
-        visible_rows = max(5, self.height() // cell_h)
+        # Compute exact number of columns and rows to fill the widget
+        cols = max(10, math.ceil(self.width() / cell_w))
+        rows = max(5, math.ceil(self.height() // cell_h))
 
-        # Add extra rows/cols for bigger Neovim screen
-        extra_cols = 5
-        extra_rows = 4
-        total_cols = visible_cols + extra_cols
-        total_rows = visible_rows + extra_rows
+        cols += 4
+        rows += 4
 
-        # Only resize Neovim if changed
-        if total_cols != self.cols or total_rows != self.rows:
-            self.cols = total_cols
-            self.rows = total_rows
-            self.nvim_client.resize(total_cols, total_rows)
+        # Only resize Neovim if grid size changed
+        if cols != self.cols or rows != self.rows:
+            self.cols = cols
+            self.rows = rows
+            self.nvim_client.resize(cols, rows)
 
-        # Update cell scaling to make the visible area exactly fit widget
-        self.redraw.cell_w = self.width() / visible_cols
-        self.redraw.cell_h = self.height() / visible_rows
-        
-        return super().resizeEvent(event)
+        # Update redraw scaling to match the widget
+        self.redraw.cell_w = self.width() / cols
+        self.redraw.cell_h = self.height() / rows
 
     def get_text(self):
         """Safely get Neovim buffer text"""
