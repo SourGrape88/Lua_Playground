@@ -197,22 +197,30 @@ class NeovimWidget(QWidget):
 
 
     def resizeEvent(self, event):
-
         metrics = self.fontMetrics()
-
         cell_w = metrics.horizontalAdvance("M")
         cell_h = metrics.height()
 
-        cols = max(10, self.width() // cell_w)
-        rows = max(5, self.height() // cell_h)
+        # Compute visible rows/cols to fit the widget
+        visible_cols = max(10, self.width() // cell_w)
+        visible_rows = max(5, self.height() // cell_h)
 
-        if cols != self.cols or rows != self.rows:
+        # Add extra rows/cols for bigger Neovim screen
+        extra_cols = 5
+        extra_rows = 4
+        total_cols = visible_cols + extra_cols
+        total_rows = visible_rows + extra_rows
 
-            self.cols = cols
-            self.rows = rows
+        # Only resize Neovim if changed
+        if total_cols != self.cols or total_rows != self.rows:
+            self.cols = total_cols
+            self.rows = total_rows
+            self.nvim_client.resize(total_cols, total_rows)
 
-            self.nvim_client.resize(cols, rows)
-
+        # Update cell scaling to make the visible area exactly fit widget
+        self.redraw.cell_w = self.width() / visible_cols
+        self.redraw.cell_h = self.height() / visible_rows
+        
         return super().resizeEvent(event)
 
     def get_text(self):
