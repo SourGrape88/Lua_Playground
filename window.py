@@ -18,6 +18,7 @@ from file_manager import FileManager
 from overlay_widget import HolographicOverlay
 from lsp_manager import LSPClient
 from neovim_widget import NeovimWidget
+from language_runner import LanguageRunner
 
 from lupa import LuaRuntime
 
@@ -43,6 +44,11 @@ class MainWindow(QMainWindow):
         self.nvim_editor = NeovimWidget()
         self.new_tab_button = QPushButton("New Tab")
         self.new_tab_button.clicked.connect(lambda: self.create_new_editor_tab(language=self.console.language))
+
+        # Script Runner
+        self.runner = LanguageRunner()
+        self.runner.lua_runtime = self.lua
+        self.runner.canvas = self.canvas
 
         # Add File Explorer from file_explorer.py
         self.file_explorer = FileExplorer()
@@ -141,15 +147,10 @@ class MainWindow(QMainWindow):
         # Expose Python draw functions to Lua
         self.lua_globals.circle = self.canvas.draw_circle
         self.lua_globals.rect = self.canvas.draw_rect
+        self.lua_globals.cls = self.canvas.cls
 
         # Redirect Lua Print() to Output Console
         self.lua_globals.print = lambda *args: self.console.log(" ".join(str(a) for a in args))
-
-        # Overlay Widget -------
-        #self.overlay_container = QWidget(self.centralWidget())
-        #self.overlay_container.setGeometry(0, 0, self.centralWidget().width(), self.centralWidget().height())
-        #self.overlay_container.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        #self.overlay_container.show()
 
         # Put the OpenGL overlay inside the container
         self.overlay = HolographicOverlay(central)
@@ -168,7 +169,7 @@ class MainWindow(QMainWindow):
     def run_lua_code(self):
         # Placeholder for now: Just print Editor Text to Console
     
-        code = ""
+        code = self.nvim_editor.get_text()
         # Clear Console Before Running
         self.console.clear_console()
         
@@ -183,9 +184,13 @@ class MainWindow(QMainWindow):
             self.canvas.lua_draw_commands.clear()
             # Execute New Lua Code
             self.console.log("Running Script...\n")
-            self.lua.execute(code)
+            
+            output = self.runner.execute(self.console.language, code)
+
+            if output:
+                self.console.log(output)
+
             # Start "Finished" Status Light
-            #self.status_indicator.set_finished()
             QTimer.singleShot(500, self.status_indicator.set_finished)
             QTimer.singleShot(2000, self.status_indicator.set_idle) # 1500 = 1.5 Seconds
         except Exception as e:

@@ -9,14 +9,13 @@ class Canvas(QWidget):
     def __init__(self, lua):
         super().__init__()
         self.lua = lua
-        # Position of the animated circle
+        
+        # Demo Python State
         self.x = 300
-        # Speed of the Circle
         self.dx = 2
 
         # List of Draw Commands
         self.draw_commands = []
-
         # List of Lua Commands
         self.lua_draw_commands = []
 
@@ -46,31 +45,57 @@ class Canvas(QWidget):
 
     # ------------------------------------------------------------
 
+    # Cls() (Clear Screen) Function
+    def cls(self):
+        """Clear All draw commands for the next frame"""
+        self.draw_commands.clear()
+        self.lua_draw_commands.clear()
+
     def update_frame(self):
 
         """The Update Function"""
 
         # Demo Animation (moving circle)
-        self.x += self.dx
+        #self.x += self.dx
         # Bounce if it hits left or right edge of screen
-        if self.x < 200 or self.x > 500:
-          self.dx = -self.dx
+        #if self.x < 200 or self.x > 500:
+          #self.dx = -self.dx
+
+        # Game Loop Functions
+        lua_globals = self.lua.globals()
+        lua_init = getattr(self.lua.globals(), "_init", None)
+        lua_update = getattr(self.lua.globals(), "_update", None)
+        lua_draw = getattr(self.lua.globals(), "_draw", None)
+
+        # Run _init() if it exists
+        if not hasattr(self, "_init_ran") and lua_init:
+            try:
+                lua_init()
+            except Exception as e:
+                print(f"Lua _init() Error: {e}")
+            self._init_ran = True
 
         # Clear Previous Frame's Commands
-        self.draw_commands.clear()
+        self.cls()
         #self.lua_draw_commands.clear()
 
         # --- Call Lua Update() If it Exists -------
-        lua_update = getattr(self.lua.globals(), "update", None)
         if lua_update:
             try:
                 lua_update()
             except Exception as e:
-                print(f"Lua Update Error: {e}")
+                print(f"Lua _update Error: {e}")
+
+        # --- Call Lua Draw() If it Exists -------
+        if lua_draw:
+            try:
+                lua_draw()
+            except Exception as e:
+                print(f"Lua _draw() Error: {e}")
 
         # Add Python Demo Shapes
-        self.draw_commands.append(("circle", self.x, 200, 40, (100, 200, 255)))
-        self.draw_commands.append(("rect", 100, 300, 60, 60, (150, 70, 100)))
+        #self.draw_commands.append(("circle", self.x, 200, 40, (100, 200, 255)))
+        #self.draw_commands.append(("rect", 100, 300, 60, 60, (150, 70, 100)))
 
         # Add Lua Shapes
         self.draw_commands.extend(self.lua_draw_commands)

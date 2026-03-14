@@ -214,3 +214,21 @@ class NeovimWidget(QWidget):
             self.nvim_client.resize(cols, rows)
 
         return super().resizeEvent(event)
+
+    def get_text(self):
+        """Safely get Neovim buffer text"""
+        
+        result = []
+
+        def get_buffer():
+            buf = self.nvim_client.nvim.current.buffer
+            result.append("\n".join(buf[:]))
+
+        self.nvim_client.nvim.async_call(get_buffer)
+
+        # Wait briefly for async call to complete
+        import time
+        time.sleep(0.01)
+
+        return result[0] if result else ""
+        
