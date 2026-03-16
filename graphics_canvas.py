@@ -10,9 +10,6 @@ class Canvas(QWidget):
         super().__init__()
         self.lua = lua
         
-        # For Print Output
-        self.messages = []
-
         # Demo Python State
         self.x = 300
         self.dx = 2
@@ -29,47 +26,18 @@ class Canvas(QWidget):
         # Start Timer at ~60 FPS
         self.timer.start(16)
 
-    # -------------DRAW COMMAND FUNCTIONS ------------------
-    # Circle() Function
-    def draw_circle(self, x, y, r, color=(100, 200, 255)):
-        """Add a Circle Command to the Draw List"""
-        if color is None:
-            color = (100, 200, 255)
-        elif hasattr(color, 'values'):
-            color = tuple(color.values())
-        self.lua_draw_commands.append(("circle", x, y, r, color))
+        self._init_ran = False
 
-    # Rect() Function
-    def draw_rect(self, x, y, w, h, color=(150, 70, 100)):
-        """Add a Rectangle Command to the Draw List"""
-        if color is None:
-            color = (255, 20, 50)
-        elif hasattr(color, 'values'):
-            color = tuple(color.values())
-        self.lua_draw_commands.append(("rect", x, y, w, h, color))
+    def add_draw_command(self, cmd):
+        """Called by Lua Helper Functions to Queue a Command"""
+        self.lua_draw_commands.append(cmd)
 
-    # Cls() (Clear Screen) Function
     def cls(self):
-        """Clear All draw commands for the next frame"""
         self.draw_commands.clear()
         self.lua_draw_commands.clear()
 
-    def print_to_canvas(self, text, color=Qt.GlobalColor.white):
-        """Display messages on the canvas"""
-        # You can maintain a list of strings for display
-        self.messages.append((str(text), color))
-        # optionally store color for each line
-        self.update()  # trigger paintEvent
-
     def update_frame(self):
-
         """The Update Function"""
-
-        # Demo Animation (moving circle)
-        #self.x += self.dx
-        # Bounce if it hits left or right edge of screen
-        #if self.x < 200 or self.x > 500:
-          #self.dx = -self.dx
 
         # Game Loop Functions
         lua_globals = self.lua.globals()
@@ -78,7 +46,7 @@ class Canvas(QWidget):
         lua_draw = getattr(self.lua.globals(), "_draw", None)
 
         # Run _init() if it exists
-        if not hasattr(self, "_init_ran") and lua_init:
+        if not self._init_ran and lua_init:
             try:
                 lua_init()
             except Exception as e:
@@ -103,10 +71,6 @@ class Canvas(QWidget):
             except Exception as e:
                 print(f"Lua _draw() Error: {e}")
 
-        # Add Python Demo Shapes
-        #self.draw_commands.append(("circle", self.x, 200, 40, (100, 200, 255)))
-        #self.draw_commands.append(("rect", 100, 300, 60, 60, (150, 70, 100)))
-
         # Add Lua Shapes
         self.draw_commands.extend(self.lua_draw_commands)
 
@@ -123,20 +87,32 @@ class Canvas(QWidget):
 
         # Loop through all Draw Commands
         for cmd in self.draw_commands:
+            kind = cmd[0]
             # If the first command in line is Circle...
-            if cmd[0] == "circle":
+            if kind == "circle":
                 _, x, y, r, color = cmd
                 painter.setBrush(QColor(*color))
                 painter.drawEllipse(x, y, r, r)
 
-            elif cmd[0] == "rect":
+            elif kind == "rect":
                 _, x, y, w, h, color = cmd
                 painter.setBrush(QColor(*color))
                 painter.drawRect(x, y, w, h)
 
-        # Draw printed messages
-        y = 20
-        for msg, color in self.messages[-20:]:  # show last 20 lines
-            painter.setPen(QColor(color))
-            painter.drawText(10, y, msg)
-            y += 20
+            elif kind == "line":
+                _, x1, y1, x2, y2, color, thickness = cmd
+                painter.setPen(QColor(*color))
+                pen = painter.pen()
+                pen.setWidth(thickness)
+                painter.setPen(pen)
+                painter.drawLine(x1, y1, x2, y2)
+
+            elif kind in ("text", "print"):
+                _, text, x, y, color, size = cmd
+                painter.setPen(QColor(*color))
+                font = painter.font()
+                font.setPointSize(size)
+                painter.setFont(font)
+                painter.drawText(x, y, text)
+            else:
+                print("Warning: invalid draw command tuple:", cmd)

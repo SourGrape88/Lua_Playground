@@ -17,6 +17,7 @@ from overlay_widget import HolographicOverlay
 from lsp_manager import LSPClient
 from neovim_widget import NeovimWidget
 from language_runner import LanguageRunner
+from game_functions import draw_circle, draw_rect, draw_line, print_to_canvas, cls
 
 from lupa import LuaRuntime
 
@@ -42,7 +43,7 @@ class MainWindow(QMainWindow):
         # Pass Lua to Canvas
         self.canvas = Canvas(self.lua)
         builtins.print = lambda *args, **kwargs: self.output_console.log(" ".join(str(a) for a in args))
-        self.lua_globals.print = lambda *args: self.output_console.log(" ".join(str(a) for a in args))
+        #self.lua_globals.print = lambda *args: self.output_console.log(" ".join(str(a) for a in args))
         
         # Adds Status Indicator
         self.status_indicator = StatusIndicator()
@@ -95,9 +96,11 @@ class MainWindow(QMainWindow):
         #self.run_button.clicked.connect(self.run_lua_code)
 
         # Expose Python draw functions to Lua
-        self.lua_globals.circle = self.canvas.draw_circle
-        self.lua_globals.rect = self.canvas.draw_rect
-        self.lua_globals.cls = self.canvas.cls
+        self.lua_globals.circle = lambda *args, **kwargs: draw_circle(self.canvas, *args, **kwargs)
+        self.lua_globals.rect = lambda *args, **kwargs: draw_rect(self.canvas, *args, **kwargs)
+        self.lua_globals.cls = lambda *args, **kwargs: cls(self.canvas)
+        self.lua_globals.print = lambda *args, **kwargs: print_to_canvas(self.canvas, *args, **kwargs)
+        self.lua_globals.line = lambda *args, **kwargs: draw_line(self.canvas, *args, **kwargs)
 
         # Put the OpenGL Overlay inside the container
         self.overlay = HolographicOverlay(central)
