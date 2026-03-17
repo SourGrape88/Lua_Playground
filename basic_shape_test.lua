@@ -11,7 +11,7 @@ function _init()
     load_anim("player_anim", frames, 8) -- 8FPS
 
     player = {
-        name = "player",
+        name = "player_anim",
         x = 400,
         y = 400,
 
@@ -51,5 +51,6 @@ function _draw()
     line(400,200,500,lineY)
     print("hello world")
     sprite("player", 500, 100)
-    sprite(player.name, player.x, 300)
+    --sprite("Player_anim", 100, 500)
+    sprite("player_anim", player.x, 300)
 end
