@@ -7,20 +7,21 @@ from language_runner import LanguageRunner
 
 import subprocess
 import os
+import shlex
 
 class CommandThread(QThread):
     output = pyqtSignal(str)
+    
 
-    def __init__(self, command, cwd):
-        super().__init__()
-        self.command = command 
+    def __init__(self, args, cwd):
+        super().__init__() 
+        self.args = args
         self.cwd = cwd
 
     def run(self):
         """Run the Command and Emit Output Line By Line"""
         proc = subprocess.Popen(
-            self.command,
-            shell=True,
+            self.args,
             cwd=self.cwd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -109,7 +110,8 @@ class OutputConsole(QPlainTextEdit):
 
         if any(command.strip().startswith(cmd) for cmd in shell_cmds):
             # Run Directly Via Subprocess
-            self.thread = CommandThread(command, self.cwd)
+            args = shlex.split(command)
+            self.thread = CommandThread(args, self.cwd)
             self.thread.output.connect(self.log)
             self.thread.finished.connect(self.prompt)
             self.thread.start()

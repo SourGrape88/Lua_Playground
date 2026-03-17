@@ -3,6 +3,7 @@ function _init()
     rectY = 100
     lineY = 300
     load_sprite("player", "C:/Users/Owner/Desktop/Projects/Lua_Playground/assets/status_light/Sprite_test.png")
+    
     frames = {
         "C:/Users/Owner/Desktop/Projects/Lua_Playground/assets/status_light/Sprite_test.png",
         "C:/Users/Owner/Desktop/Projects/Lua_Playground/assets/status_light/Sprite_test2.png"
