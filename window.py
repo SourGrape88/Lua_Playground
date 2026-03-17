@@ -10,8 +10,8 @@ from PyQt6.QtCore import QTimer, Qt
 # Modules ---------------------
 from graphics_canvas import Canvas
 from output_console import OutputConsole
-from code_editor import CodeEditor
-from editor_tabs import EditorTabs
+#from code_editor import CodeEditor
+#from editor_tabs import EditorTabs
 from status_indicator import StatusIndicator
 from overlay_widget import HolographicOverlay
 from lsp_manager import LSPClient
