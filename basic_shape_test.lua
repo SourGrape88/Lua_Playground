@@ -20,8 +20,10 @@ function _update()
 end
 
 function _draw()
-    print("Hello Byron")
-    circle(100, circleY)
-    rect(200, rectY)
-    line(300, 300, 400, lineY)
+    rect()
+    rectfill()
+    circle()
+    circlefill()
+    line()
+    print("hello world")
 end

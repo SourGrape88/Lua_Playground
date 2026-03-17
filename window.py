@@ -17,9 +17,18 @@ from overlay_widget import HolographicOverlay
 from lsp_manager import LSPClient
 from neovim_widget import NeovimWidget
 from language_runner import LanguageRunner
-from game_functions import draw_circle, draw_rect, draw_line, print_to_canvas, cls
+from game_functions import draw_circle, draw_circlefill, draw_rect, draw_rectfill, draw_line, print_to_canvas, cls
 
 from lupa import LuaRuntime
+
+def lua_color(color, default):
+    
+    if color is None:
+        return default
+    try:
+        return tuple(color[i] for i in range(1, 4))
+    except Exception:
+        return default
 
 class MainWindow(QMainWindow):
 
@@ -96,12 +105,23 @@ class MainWindow(QMainWindow):
         #self.run_button.clicked.connect(self.run_lua_code)
 
         # Expose Python draw functions to Lua
-        self.lua_globals.circle = lambda *args, **kwargs: draw_circle(self.canvas, *args, **kwargs)
-        self.lua_globals.rect = lambda *args, **kwargs: draw_rect(self.canvas, *args, **kwargs)
-        self.lua_globals.cls = lambda *args, **kwargs: cls(self.canvas)
-        self.lua_globals.print = lambda *args, **kwargs: print_to_canvas(self.canvas, *args, **kwargs)
-        self.lua_globals.line = lambda *args, **kwargs: draw_line(self.canvas, *args, **kwargs)
+        self.lua_globals.circle = lambda x=10, y=50, r=50, color=None, thickness=2: \
+        draw_circle(self.canvas, x, y, r, lua_color(color, (100, 200, 255)), thickness)
 
+        self.lua_globals.circlefill = lambda x=100, y=100, r=50, color=None: \
+            draw_circlefill(self.canvas, x, y, r, lua_color(color, (200, 200, 55)))
+
+        self.lua_globals.rect = lambda x=200, y=200, w=70, h=50, color=None, thickness=2: \
+            draw_rect(self.canvas, x, y, w, h, lua_color(color, (200, 50, 255)), thickness)
+
+        self.lua_globals.rectfill = lambda x=300, y=200, w=70, h=50, color=None: \
+            draw_rectfill(self.canvas, x, y, w, h, lua_color(color, (200, 150, 255)))
+
+        self.lua_globals.print = lambda text, x=10, y=20, color=None, size=12: \
+            print_to_canvas(self.canvas, text, x, y, lua_color(color, (255, 255, 255)), size)
+
+        self.lua_globals.line = lambda x1=400, y1=200, x2=500, y2=500, color=None, thickness=2: \
+            draw_line(self.canvas, x1, y1, x2, y2, lua_color(color, (255, 255, 255)), thickness)
         # Put the OpenGL Overlay inside the container
         self.overlay = HolographicOverlay(central)
         self.overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)

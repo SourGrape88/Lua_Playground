@@ -103,7 +103,19 @@ class OutputConsole(QPlainTextEdit):
             self.prompt()
             return
         
-        # ---- Try Lua Execution ----
+        # ---- Detect Shell Commands ----
+        # List of cmmands to always run in shell
+        shell_cmds = ["git", "ls", "dir", "python", "pip", "npm", "curl"]
+
+        if any(command.strip().startswith(cmd) for cmd in shell_cmds):
+            # Run Directly Via Subprocess
+            self.thread = CommandThread(command, self.cwd)
+            self.thread.output.connect(self.log)
+            self.thread.finished.connect(self.prompt)
+            self.thread.start()
+            return
+
+        # ---- Otherwise Try Lua Execution ----
         if hasattr(self, "runner"):
             output = self.runner.execute(self.language, command, cwd=self.cwd)
             if output:
@@ -111,7 +123,7 @@ class OutputConsole(QPlainTextEdit):
             self.prompt()
             return
        
-        # ---- Run Shell Commands (git, ls, etc) ----
+        # ---- Fallback: Run Anything else in Shell ----
         self.thread = CommandThread(command, self.cwd)
         self.thread.output.connect(self.log)
         self.thread.finished.connect(self.prompt)
