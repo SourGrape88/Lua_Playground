@@ -1,7 +1,7 @@
 # ---------CANVAS (GRAPHICS) ------------------------------------
 
 from PyQt6.QtWidgets import QWidget
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter, QColor, QPixmap
 from PyQt6.QtCore import QTimer, Qt
 
 class Canvas(QWidget):
@@ -26,11 +26,53 @@ class Canvas(QWidget):
         # Start Timer at ~60 FPS
         self.timer.start(16)
 
+        # Store Sprites and Animations
+        self.assets = {}
+
+        # Store Animation FPS
+        self.frame_count = 0
+
         self._init_ran = False
 
     def add_draw_command(self, cmd):
         """Called by Lua Helper Functions to Queue a Command"""
         self.lua_draw_commands.append(cmd)
+
+    def load_sprite(self, name, file_path):
+        """Load Sprite and store it in self.sprites = {}"""
+        pixmap = QPixmap(file_path)
+        
+        if pixmap.isNull():
+            print(f"Failed to load sprite: {file_path}")
+            return
+        
+        self.assets[name] = {
+            "frames": [pixmap],
+            "fps": 0 # 0 = Static Image
+        }
+        print(f"[Load Sprite] {name} -> {file_path}")
+        print("Assets now:", self.assets.keys())
+
+    def load_anim(self, name, file_paths, fps=8):
+        frames = []
+
+        for path in file_paths:
+            pixmap = QPixmap(path)
+            if pixmap.isNull():
+                print(f"Failed to load Frame: {path}")
+                continue
+            frames.append(pixmap)
+
+        if not frames:
+            print(f"Animation '{name}' has no valid frames.")
+            return
+        
+        self.assets[name] = {
+            "frames": frames,
+            "fps": fps
+        }
+        print(f"[Load Sprite] {name} -> {file_paths}")
+        print("Assets now:", self.assets.keys())
 
     def cls(self):
         self.draw_commands.clear()
@@ -44,6 +86,9 @@ class Canvas(QWidget):
         lua_init = getattr(self.lua.globals(), "_init", None)
         lua_update = getattr(self.lua.globals(), "_update", None)
         lua_draw = getattr(self.lua.globals(), "_draw", None)
+
+        # Track FPS
+        self.frame_count += 1
 
         # Run _init() if it exists
         if not self._init_ran and lua_init:
@@ -142,9 +187,41 @@ class Canvas(QWidget):
                     font.setPointSize(size)
                     painter.setFont(font)
                     painter.drawText(x, y, text)
-                else:
-                    print("Warning: invalid draw command tuple:", cmd)
-            
+
+                elif kind == "sprite":
+                    if len(cmd) == 4:
+                        _, name, x, y = cmd
+                        w, h, = -1, -1
+                    else:
+                        _, name, x, y, w, h = cmd
+                        if w is None:
+                            w = -1
+                        if h is None:
+                            h = -1
+                    
+                    if name not in self.assets:
+                        print(F"Missing Asset: {name}")
+                        continue
+
+                    asset = self.assets[name]
+                    frames = asset["frames"]
+                    fps = asset["fps"]
+
+                    # Determin frame
+                    if fps > 0:
+                        frame_index = (self.frame_count // (60 // fps)) % len(frames)
+                    else:
+                        frame_index = 0
+
+                    frame_index = (self.frame_count // (60 // fps)) % len(frames) if fps > 0 else 0
+                    pixmap = frames[frame_index]
+
+                    if w > 0 and h > 0:
+                        painter.drawPixmap(x, y, w, h, pixmap)
+                    else:
+                        painter.drawPixmap(x, y, pixmap)
+
+
             except Exception as e:
                 print(f"Painter error for command {cmd}: {e}")
 

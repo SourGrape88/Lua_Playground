@@ -10,14 +10,12 @@ from PyQt6.QtCore import QTimer, Qt
 # Modules ---------------------
 from graphics_canvas import Canvas
 from output_console import OutputConsole
-#from code_editor import CodeEditor
-#from editor_tabs import EditorTabs
 from status_indicator import StatusIndicator
 from overlay_widget import HolographicOverlay
 from lsp_manager import LSPClient
 from neovim_widget import NeovimWidget
 from language_runner import LanguageRunner
-from game_functions import draw_circle, draw_circlefill, draw_rect, draw_rectfill, draw_line, print_to_canvas, cls
+from game_functions import draw_circle, draw_circlefill, draw_rect, draw_rectfill, draw_line, print_to_canvas, cls, sprite, load_sprite_to_canvas
 
 from lupa import LuaRuntime
 
@@ -122,6 +120,19 @@ class MainWindow(QMainWindow):
 
         self.lua_globals.line = lambda x1=400, y1=200, x2=500, y2=500, color=None, thickness=2: \
             draw_line(self.canvas, x1, y1, x2, y2, lua_color(color, (255, 255, 255)), thickness)
+        
+        # Load Sprite from file
+        self.lua_globals.load_sprite = lambda name, path: \
+            self.canvas.load_sprite(name, path)
+        
+        # Load Animation
+        self.lua_globals.load_anim = lambda name, paths, fps=8: \
+            self.canvas.load_anim(name, list(paths.values()), fps)
+
+        # Draw sprite
+        self.lua_globals.sprite = lambda name, x=0, y=0, w=None, h=None: \
+            sprite(self.canvas, name, x, y, w, h)
+
         # Put the OpenGL Overlay inside the container
         self.overlay = HolographicOverlay(central)
         self.overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -146,7 +157,7 @@ class MainWindow(QMainWindow):
     
         code = self.nvim_editor.get_text()
         self.canvas.lua_draw_commands.clear()
-        
+        self.canvas._init_ran = False
         try:
             # Start "Running Code" Status Light
             self.status_indicator.set_running()
