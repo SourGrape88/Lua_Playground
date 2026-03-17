@@ -7,33 +7,56 @@ from language_runner import LanguageRunner
 
 import subprocess
 import os
-import shlex
+import shlex, sys
 
 class CommandThread(QThread):
     output = pyqtSignal(str)
     
 
-    def __init__(self, args, cwd):
+    def __init__(self, command, cwd):
         super().__init__() 
-        self.args = args
+        self.command = command
         self.cwd = cwd
 
     def run(self):
         """Run the Command and Emit Output Line By Line"""
-        proc = subprocess.Popen(
-            self.args,
-            cwd=self.cwd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        # Capture stdout
-        for line in proc.stdout:
-            self.output.emit(line.rstrip())
-        # Capture stderr
-        for line in proc.stderr:
-            self.output.emit(line.rstrip())
-        proc.wait()
+        try:
+            shell_cmds = ["git", "dir", "ls", "python", "pip", "npm", "curl"]
+
+            # On Windows, always use shell=True for commands like git
+            if sys.platform == "win32":
+                import shlex
+                args = shlex.split(self.command, posix=False)
+                proc = subprocess.Popen(
+                    args,
+                    cwd=self.cwd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    shell=True  # important for Windows to parse quotes
+                )
+            else:
+                # On Linux/macOS, split arguments safely
+                args = shlex.split(self.command)
+                proc = subprocess.Popen(
+                    args,
+                    cwd=self.cwd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    shell=False
+                )
+
+            # Capture stdout
+            for line in proc.stdout:
+                self.output.emit(line.rstrip())
+            # Capture stderr
+            for line in proc.stderr:
+                self.output.emit(line.rstrip())
+            proc.wait()
+
+        except Exception as e:
+            self.output.emit(f"[ERROR] {str(e)}")
 
 class OutputConsole(QPlainTextEdit):
     def __init__(self, parent=None):
@@ -88,14 +111,12 @@ class OutputConsole(QPlainTextEdit):
             self.prompt()
             return
         
+        parts = command.strip().split()
+
         # ---- Handle CD Manually ----
-        if command.startswith("cd"):
-
-            parts = command.split()
-
+        if parts and parts[0] == "cd":
             if len(parts) > 1:
                 new_path = os.path.abspath(os.path.join(self.cwd, parts[1]))
-
                 if os.path.isdir(new_path):
                     self.cwd = new_path
                 else:
@@ -104,21 +125,10 @@ class OutputConsole(QPlainTextEdit):
             self.prompt()
             return
         
-        # ---- Detect Shell Commands ----
-        # List of cmmands to always run in shell
-        shell_cmds = ["git", "ls", "dir", "python", "pip", "npm", "curl"]
-
-        if any(command.strip().startswith(cmd) for cmd in shell_cmds):
-            # Run Directly Via Subprocess
-            args = shlex.split(command)
-            self.thread = CommandThread(args, self.cwd)
-            self.thread.output.connect(self.log)
-            self.thread.finished.connect(self.prompt)
-            self.thread.start()
-            return
+        lua_keywords = ["print", "circle", "rect", "line", "sprite", "btn", "btnp"]
 
         # ---- Otherwise Try Lua Execution ----
-        if hasattr(self, "runner"):
+        if any(command.strip().startswith(k) for k in lua_keywords):
             output = self.runner.execute(self.language, command, cwd=self.cwd)
             if output:
                 self.log(output)   
@@ -126,7 +136,9 @@ class OutputConsole(QPlainTextEdit):
             return
        
         # ---- Fallback: Run Anything else in Shell ----
+        
         self.thread = CommandThread(command, self.cwd)
         self.thread.output.connect(self.log)
         self.thread.finished.connect(self.prompt)
         self.thread.start()
+        

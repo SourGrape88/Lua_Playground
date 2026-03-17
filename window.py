@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
 
         # Pass Lua to Canvas
         self.canvas = Canvas(self.lua)
+        self.canvas.setFocus()
         builtins.print = lambda *args, **kwargs: self.output_console.log(" ".join(str(a) for a in args))
         #self.lua_globals.print = lambda *args: self.output_console.log(" ".join(str(a) for a in args))
         
@@ -60,6 +61,8 @@ class MainWindow(QMainWindow):
 
         # Adds Editor_tabs File
         self.nvim_editor = NeovimWidget()
+        self.nvim_editor.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        #self.canvas.setFocus()
 
         # Script Runner
         self.runner = LanguageRunner()
@@ -132,6 +135,10 @@ class MainWindow(QMainWindow):
         # Draw sprite
         self.lua_globals.sprite = lambda name, x=0, y=0, w=None, h=None: \
             sprite(self.canvas, name, x, y, w, h)
+        
+        # Button Press
+        self.lua_globals.btn = lambda key: self.canvas.btn(key)
+        self.lua_globals.btnp = lambda key: self.canvas.btnp(key)
 
         # Put the OpenGL Overlay inside the container
         self.overlay = HolographicOverlay(central)

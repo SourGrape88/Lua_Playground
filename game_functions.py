@@ -32,3 +32,9 @@ def sprite(canvas, name, x=500, y=100, w=None, h=None):
 
 def cls(canvas):
     canvas.cls()
+
+def btn(canvas, key):
+    return canvas.btn(key)
+
+def btnp(canvas, key):
+    return canvas.btnp(key)

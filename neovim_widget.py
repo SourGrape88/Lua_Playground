@@ -171,6 +171,10 @@ class NeovimWidget(QWidget):
                         QColor(200, 200, 255, 120)
                     )
 
+    def mousePressEvent(self, event):
+        self.setFocus()
+        super().mousePressEvent(event)
+    
     def keyPressEvent(self, event):
 
         key = event.key()

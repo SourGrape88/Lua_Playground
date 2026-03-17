@@ -9,6 +9,14 @@ function _init()
         "C:/Users/Owner/Desktop/Projects/Lua_Playground/assets/status_light/Sprite_test2.png"
     }
     load_anim("player_anim", frames, 8) -- 8FPS
+
+    player = {
+        name = "player",
+        x = 400,
+        y = 400,
+
+    }
+
 end
 
 function _update()
@@ -24,6 +32,15 @@ function _update()
     if lineY > 400 then
         lineY = 200
     end
+
+    if btn("d") then
+        player.x = player.x + 2
+    end
+
+    if btn("a") then
+        player.x = player.x - 2
+    end
+
 end
 
 function _draw()
@@ -34,5 +51,5 @@ function _draw()
     line(400,200,500,lineY)
     print("hello world")
     sprite("player", 500, 100)
-    sprite("player_anim", 500, 300)
+    sprite(player.name, player.x, 300)
 end

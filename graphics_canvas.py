@@ -8,6 +8,9 @@ class Canvas(QWidget):
 
     def __init__(self, lua):
         super().__init__()
+        
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setFocus()
         self.lua = lua
         
         # Demo Python State
@@ -31,6 +34,22 @@ class Canvas(QWidget):
 
         # Store Animation FPS
         self.frame_count = 0
+
+        # Key Inputs
+        self.QT_KEY_MAP = {
+            "a": Qt.Key.Key_A,
+            "d": Qt.Key.Key_D,
+            "w": Qt.Key.Key_W,
+            "s": Qt.Key.Key_S,
+            "space": Qt.Key.Key_Space,
+            "left": Qt.Key.Key_Left,
+            "right": Qt.Key.Key_Right,
+            "up": Qt.Key.Key_Up,
+            "down": Qt.Key.Key_Down,
+        }
+
+        self.keys_down = set()
+        self.keys_pressed = set()
 
         self._init_ran = False
 
@@ -78,8 +97,26 @@ class Canvas(QWidget):
         self.draw_commands.clear()
         self.lua_draw_commands.clear()
 
+    def btn(self, key):
+        qt_key = self.QT_KEY_MAP.get(key.lower()) if isinstance(key, str) else key
+        if qt_key is None:
+            return False
+        return qt_key in self.keys_down
+
+    def btnp(self, key):
+        qt_key = self.QT_KEY_MAP.get(key.lower()) if isinstance(key, str) else key
+        if qt_key is None:
+            return False
+        if qt_key in self.keys_pressed:
+            self.keys_pressed.remove(qt_key)
+            return True
+        return False
+
     def update_frame(self):
         """The Update Function"""
+
+        # Clear Pressed Keys at the Start of the Frame
+        self.keys_pressed.clear()
 
         # Game Loop Functions
         lua_globals = self.lua.globals()
@@ -228,4 +265,18 @@ class Canvas(QWidget):
             finally:
                 painter.restore()
             
-            
+    def mousePressEvent(self, event):
+        self.setFocus()
+    
+    def keyPressEvent(self, event):
+        qt_key = event.key() 
+        
+        if qt_key not in self.keys_down:
+            self.keys_pressed.add(qt_key)
+        self.keys_down.add(qt_key)
+
+    def keyReleaseEvent(self, event):
+        qt_key = event.key()
+
+        self.keys_down.discard(qt_key)
+        self.keys_pressed.discard(qt_key) 
