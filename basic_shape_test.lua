@@ -34,11 +34,11 @@ function _update()
     end
 
     if btn("d") then
-        player.x = player.x + 2
+        player.x = player.x + 4
     end
 
     if btn("a") then
-        player.x = player.x - 2
+        player.x = player.x - 4 
     end
 
 end
@@ -52,5 +52,5 @@ function _draw()
     print("hello world")
     sprite("player", 500, 100)
     --sprite("Player_anim", 100, 500)
-    sprite("player_anim", player.x, 300)
+    sprite(player.name, player.x, 300)
 end
