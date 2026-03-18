@@ -115,6 +115,9 @@ class Canvas(QWidget):
     def update_frame(self):
         """The Update Function"""
 
+        if hasattr(self, "running_ref") and not self.running_ref():
+            return
+
         # Clear Pressed Keys at the Start of the Frame
         self.keys_pressed.clear()
 

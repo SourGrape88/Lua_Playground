@@ -41,6 +41,15 @@ function _update()
         player.x = player.x - 4 
     end
 
+    if btn("w") then
+        player.y = player.y - 4
+    end
+    if btn("s") then
+        player.y = player.y + 4
+    end
+
+
+
 end
 
 function _draw()
@@ -52,5 +61,5 @@ function _draw()
     print("hello world")
     sprite("player", 500, 100)
     --sprite("Player_anim", 100, 500)
-    sprite(player.name, player.x, 300)
+    sprite(player.name, player.x, player.y)
 end

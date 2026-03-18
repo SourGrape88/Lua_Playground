@@ -37,6 +37,8 @@ class MainWindow(QMainWindow):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self.lua_globals = self.lua.globals()
 
+        self.canvas = Canvas(self.lua)
+
         # Start LSP Clients
         self.lua_client = LSPClient(["lua-language-server", "-E", "main.lua"])
         self.lua_client.start()
@@ -48,10 +50,13 @@ class MainWindow(QMainWindow):
         self.output_console = OutputConsole()
 
         # Pass Lua to Canvas
-        self.canvas = Canvas(self.lua)
+        #self.canvas.lua = self.lua
         self.canvas.setFocus()
         builtins.print = lambda *args, **kwargs: self.output_console.log(" ".join(str(a) for a in args))
         #self.lua_globals.print = lambda *args: self.output_console.log(" ".join(str(a) for a in args))
+        self.bind_lua_functions() 
+        self.running = False
+        self.canvas.running_ref = lambda: self.running
         
         # Adds Status Indicator
         self.status_indicator = StatusIndicator()
@@ -77,6 +82,9 @@ class MainWindow(QMainWindow):
         run_menu = self.menu_bar.addMenu("Run")
         run_menu_action = run_menu.addAction("Run Script")
         run_menu_action.triggered.connect(self.run_lua_code)
+
+        stop_action = run_menu.addAction("Stop Script")
+        stop_action.triggered.connect(self.stop_lua_code)
 
         # ---- LSP Polling Timer -----
         self.lsp_timer = QTimer()
@@ -104,10 +112,30 @@ class MainWindow(QMainWindow):
 
         # Connect Run Button
         #self.run_button.clicked.connect(self.run_lua_code)
+        # Put the OpenGL Overlay inside the container
+        self.overlay = HolographicOverlay(central)
+        self.overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.overlay.setGeometry(central.geometry())
+        self.overlay.lower()
+        self.overlay.show()
+        self.status_indicator.raise_()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        
+        # Resize Overlay to Fill Central Widget
+        self.overlay.setGeometry(0, 0, self.centralWidget().width(), self.centralWidget().height()) # Overlay follows Window Size
+
+        # Keep status indicator at the Top-Right of the graphics Canvas
+        self.status_indicator.move(
+            self.canvas.width() - self.status_indicator.width() - 10,
+              10)
+
+    def bind_lua_functions(self):
 
         # Expose Python draw functions to Lua
         self.lua_globals.circle = lambda x=10, y=50, r=50, color=None, thickness=2: \
-        draw_circle(self.canvas, x, y, r, lua_color(color, (100, 200, 255)), thickness)
+            draw_circle(self.canvas, x, y, r, lua_color(color, (100, 200, 255)), thickness)
 
         self.lua_globals.circlefill = lambda x=100, y=100, r=50, color=None: \
             draw_circlefill(self.canvas, x, y, r, lua_color(color, (200, 200, 55)))
@@ -140,27 +168,10 @@ class MainWindow(QMainWindow):
         self.lua_globals.btn = lambda key: self.canvas.btn(key)
         self.lua_globals.btnp = lambda key: self.canvas.btnp(key)
 
-        # Put the OpenGL Overlay inside the container
-        self.overlay = HolographicOverlay(central)
-        self.overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.overlay.setGeometry(central.geometry())
-        self.overlay.lower()
-        self.overlay.show()
-        self.status_indicator.raise_()
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        
-        # Resize Overlay to Fill Central Widget
-        self.overlay.setGeometry(0, 0, self.centralWidget().width(), self.centralWidget().height()) # Overlay follows Window Size
-
-        # Keep status indicator at the Top-Right of the graphics Canvas
-        self.status_indicator.move(
-            self.canvas.width() - self.status_indicator.width() - 10,
-              10)
-
     def run_lua_code(self):
         # Placeholder for now: Just print Editor Text to Console
+
+        self.running = True
     
         code = self.nvim_editor.get_text()
         self.canvas.lua_draw_commands.clear()
@@ -185,6 +196,24 @@ class MainWindow(QMainWindow):
             print(str(e))
             print("-------------------")
             self.status_indicator.set_error()
+
+    def stop_lua_code(self):
+        print("Stopping Lua Script...\n")
+        self.running = False
+
+        # Reset Lua runtime completely
+        self.lua = LuaRuntime(unpack_returned_tuples=True)
+        self.lua_globals = self.lua.globals()
+
+        # Rebind API Functions
+        self.bind_lua_functions()
+
+        # Reset Canvas
+        self.canvas.cls()
+        self.canvas._init_ran = False
+
+        # Reset Status Indicator
+        self.status_indicator.set_idle()
 
     def create_new_editor_tab(self, *args, **kwargs):
         pass
