@@ -3,8 +3,8 @@ function _update()
         print("holding A")
     end
 
-    if btnp("a") then
-        print("Pressed A Once")
+    if btnp("d") then
+        print("Pressed D Once")
     end
 
 end

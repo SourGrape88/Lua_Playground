@@ -69,8 +69,8 @@ class Canvas(QWidget):
             "frames": [pixmap],
             "fps": 0 # 0 = Static Image
         }
-        print(f"[Load Sprite] {name} -> {file_path}")
-        print("Assets now:", self.assets.keys())
+        #print(f"[Load Sprite] {name} -> {file_path}")
+        #print("Assets now:", self.assets.keys())
 
     def load_anim(self, name, file_paths, fps=8):
         frames = []
@@ -118,9 +118,6 @@ class Canvas(QWidget):
         if hasattr(self, "running_ref") and not self.running_ref():
             return
 
-        # Clear Pressed Keys at the Start of the Frame
-        self.keys_pressed.clear()
-
         # Game Loop Functions
         lua_globals = self.lua.globals()
         lua_init = getattr(self.lua.globals(), "_init", None)
@@ -161,6 +158,9 @@ class Canvas(QWidget):
 
         # Update Frame/Trigger Frame Repaint
         self.update()
+
+        # Clear Pressed Keys at the Start of the Frame
+        self.keys_pressed.clear()
 
     def paintEvent(self, event):
         """Draw All Commands"""

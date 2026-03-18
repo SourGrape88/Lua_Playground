@@ -214,6 +214,8 @@ class MainWindow(QMainWindow):
 
         # Reset Status Indicator
         self.status_indicator.set_idle()
+        self.runner.lua_runtime = self.lua
+        self.canvas.lua = self.lua
 
     def create_new_editor_tab(self, *args, **kwargs):
         pass
