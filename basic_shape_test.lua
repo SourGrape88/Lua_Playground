@@ -1,3 +1,9 @@
+-- Basic_shape_test.lua
+
+require("entities")
+
+print(spawn)
+
 function _init()
     circleY = 200
     rectY = 100
@@ -10,13 +16,50 @@ function _init()
     }
     load_anim("player_anim", frames, 8) -- 8FPS
 
-    player = {
+    player = spawn({
         name = "player_anim",
         x = 400,
         y = 400,
+        speed = 2,
 
-    }
+        update = function(self)
+            if btn("a") then self.x = self.x - self.speed end
+            if btn("d") then self.x = self.x + self.speed end
+            if btn("w") then self.y = self.y - self.speed end
+            if btn("s") then self.y = self.y + self.speed end
+        end,
 
+        draw = function(self)
+            sprite(self.name, self.x, self.y)
+        end
+
+    })
+    spawn_enemy(player.x + 100, 100, true)
+    spawn_enemy(250, 120)
+    spawn_enemy(350, 120)
+end
+
+function spawn_enemy(x, y, follow_player)
+    spawn({
+        x = x,
+        y = y,
+        dx = -1,
+        follow = follow_player or False,
+
+        update = function(self)
+            if self.follow then
+                -- Move with Player Input
+                if btn("a") then self.x = self.x - player.speed end
+                if btn("d") then self.x = self.x + player.speed end
+            else
+                self.x = self.x + self.dx
+            end
+        end,
+
+        draw = function(self)
+            rect(self.x, self.y, 10, 10)
+        end
+    })
 end
 
 function _update()
@@ -33,22 +76,7 @@ function _update()
         lineY = 200
     end
 
-    if btn("d") then
-        player.x = player.x + 4
-    end
-
-    if btn("a") then
-        player.x = player.x - 4 
-    end
-
-    if btn("w") then
-        player.y = player.y - 4
-    end
-    if btn("s") then
-        player.y = player.y + 4
-    end
-
-
+      update_entities()
 
 end
 
@@ -60,6 +88,5 @@ function _draw()
     line(398,200,500,lineY)
     print("hello world")
     sprite("player", 500, 100)
-    --sprite("Player_anim", 100, 500)
-    sprite(player.name, player.x, player.y)
+    draw_entities()
 end

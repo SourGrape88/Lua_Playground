@@ -25,6 +25,8 @@ class LanguageRunner:
         if self.lua_runtime is None:
             return "Lua runtime not initialized."
         try:
+            self.lua_runtime.execute(
+                'package.path = package.path .. ";C:/Users/Owner/Desktop/Projects/Lua_Playground/?.lua"')
             result = self.lua_runtime.execute(code)
             return str(result) if result else ""
         except Exception as e:
