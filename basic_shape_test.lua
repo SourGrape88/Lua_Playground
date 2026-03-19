@@ -1,7 +1,7 @@
 -- Basic_shape_test.lua
 
 require("entities")
-
+camera = require("camera"):new()
 print(spawn)
 
 function _init()
@@ -37,20 +37,23 @@ function _init()
     spawn_enemy(player.x + 100, 100, true)
     spawn_enemy(250, 120)
     spawn_enemy(350, 120)
+    camera:follow(player)
 end
+
+
 
 function spawn_enemy(x, y, follow_player)
     spawn({
         x = x,
         y = y,
         dx = -1,
-        follow = follow_player or False,
+        follow = follow_player or false,
 
         update = function(self)
             if self.follow then
                 -- Move with Player Input
-                if btn("a") then self.x = self.x - player.speed end
-                if btn("d") then self.x = self.x + player.speed end
+                if player.x > self.x then self.x = self.x + 1  end
+                if player.x < self.x then self.x = self.x - 1 end
             else
                 self.x = self.x + self.dx
             end
@@ -77,6 +80,7 @@ function _update()
     end
 
       update_entities()
+      camera:update()
 
 end
 

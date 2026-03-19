@@ -145,6 +145,15 @@ class Canvas(QWidget):
                 lua_update()
             except Exception as e:
                 print(f"Lua _update Error: {e}")
+        
+        cam = getattr(lua_globals, "camera", None)
+        if cam and hasattr(cam, "x") and hasattr(cam, "y"):
+            self.offset_x = cam.x
+            self.offset_y = cam.y
+        else:
+            self.offset_x = 0
+            self.offset_y = 0
+
 
         # --- Call Lua Draw() If it Exists -------
         if lua_draw:
@@ -170,6 +179,9 @@ class Canvas(QWidget):
         # Draw Background
         painter.fillRect(self.rect(), QColor(30, 30, 30))
 
+        offset_x = getattr(self, "offset_x", 0)
+        offset_y = getattr(self, "offset_y", 0)
+
         # Loop through all Draw Commands
         for cmd in self.draw_commands:
             kind = cmd[0]
@@ -185,13 +197,13 @@ class Canvas(QWidget):
                     pen.setColor(QColor(*color))
                     pen.setWidth(thickness)
                     painter.setPen(pen)
-                    painter.drawEllipse(x, y, r, r)
+                    painter.drawEllipse(x - offset_x, y - offset_y, r, r)
                     
                 elif kind == "circlefill":
                     _, x, y, r, color = cmd
                     painter.setPen(Qt.PenStyle.NoPen)
                     painter.setBrush(QColor(*color))
-                    painter.drawEllipse(x - r, y - r,2*r,2*r)
+                    painter.drawEllipse(x - r - offset_x, y - r - offset_y,2*r,2*r)
 
                 elif kind == "rect":
                     _, x, y, w, h, color, thickness = cmd
@@ -200,13 +212,13 @@ class Canvas(QWidget):
                     pen.setColor(QColor(*color))
                     pen.setWidth(thickness)
                     painter.setPen(pen)
-                    painter.drawRect(x, y, w, h)
+                    painter.drawRect(x - offset_x, y - offset_y, w, h)
 
                 elif kind == "rectfill":
                     _, x, y, w, h, color = cmd
                     painter.setPen(Qt.PenStyle.NoPen)
                     painter.setBrush(QColor(*color))
-                    painter.drawRect(x, y, w, h)
+                    painter.drawRect(x - offset_x,y - offset_y, w, h)
 
                 elif kind == "line":
                     _, x1, y1, x2, y2, color, thickness = cmd
@@ -215,7 +227,7 @@ class Canvas(QWidget):
                     pen.setColor(QColor(*color))
                     pen.setWidth(thickness)
                     painter.setPen(pen)
-                    painter.drawLine(x1, y1, x2, y2)
+                    painter.drawLine(x1 - offset_x, y1 - offset_y, x2 - offset_x, y2 - offset_y)
 
                 elif kind in ("text", "print"):
                     _, text, x, y, color, size = cmd
@@ -257,9 +269,9 @@ class Canvas(QWidget):
                     pixmap = frames[frame_index]
 
                     if w > 0 and h > 0:
-                        painter.drawPixmap(x, y, w, h, pixmap)
+                        painter.drawPixmap(x - offset_x, y - offset_y, w, h, pixmap)
                     else:
-                        painter.drawPixmap(x, y, pixmap)
+                        painter.drawPixmap(x - offset_x, y - offset_y, pixmap)
 
 
             except Exception as e:
