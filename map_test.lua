@@ -36,14 +36,26 @@ function _init()
         speed = 8,
 
         update = function(self)
-            if btn("a") then self.x = self.x - self.speed end
-            if btn("d") then self.x = self.x + self.speed end
-            if btn("w") then self.y = self.y - self.speed end
-            if btn("s") then self.y = self.y + self.speed end
+            local new_x = self.x
+            local new_y = self.y
+
+            if btn("a") then new_x = new_x - self.speed end
+            if btn("d") then new_x = new_x + self.speed end
+            if btn("w") then new_y = new_y - self.speed end
+            if btn("s") then new_y = new_y + self.speed end
+
+            local size = 64
+
+            if not map:check_collision(new_x, self.y, size, size) then
+                self.x = new_x
+            end
+            if not map:check_collision(self.x, new_y, size, size) then
+                self.y = new_y
+            end
         end,
 
         draw = function(self)
-            rect(self.x, self.y, 32, 32, {0, 200, 60})
+            rect(self.x, self.y, 64, 64, {0, 200, 60})
         end
     })
 

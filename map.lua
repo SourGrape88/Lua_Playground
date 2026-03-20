@@ -56,7 +56,26 @@ function Map:is_solid(x, y)
     if not row then return false end
 
     local tile = row[tx]
-    return tile == 1 -- 1 = solid
+    return tile ~= 0 -- Any Non-Zero tile is Solid
+end
+
+function Map:check_collision(x, y, w, h)
+    local start_tx = math.floor(x / self.tile_size) + 1
+    local end_tx = math.floor((x + w - 1) / self.tile_size) + 1 
+    local start_ty = math.floor(y / self.tile_size) + 1
+    local end_ty = math.floor((y + h - 1) / self.tile_size) + 1
+
+    for ty = start_ty, end_ty do
+        local row = self.data[ty]
+        if row then
+            for tx = start_tx, end_tx do
+                if row[tx] ~= 0 then
+                    return true
+                end
+            end
+        end
+    end
+    return false
 end
 
 return Map
