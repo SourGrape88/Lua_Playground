@@ -91,6 +91,7 @@ function _draw()
     circlefill(100, circleY)
     line(398,200,500,lineY)
     print("hello world")
+    print(spawn, 300, 50)
     sprite("player", 500, 100)
     draw_entities()
 end
