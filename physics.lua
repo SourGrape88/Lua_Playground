@@ -14,16 +14,19 @@ function Physics.apply_friction(entity, friction)
     entity.vy = entity.vy * (1 - (friction or 0.1))
 end
 
+-- (Check Collision)
 -- Move entity and resolve collision against a Map
 function Physics.move(entity, map)
     local new_x = entity.x + entity.vx
     local new_y = entity.y + entity.vy
     local w, h = entity.width, entity.height
 
-    -- X-axis
+    -- X-axis (Can I Move Horizontally?)
     if not map:check_collision(new_x, entity.y, w, h) then
+        -- Yes -> Move
         entity.x = new_x
     else
+        -- No -> Stop Horizontal Velocity
         entity.vx = 0 -- Or Bounce
     end
 

@@ -38,28 +38,31 @@ function _init()
         height = 64,
         vx = 0,
         vy = 0,
-        speed = 8,
+        speed = 14,
 
         update = function(self)
-            local new_x = self.x
-            local new_y = self.y
 
+            -- Check Ground (for jumps)
+            -- If the Player Moves Down 1 Pixel
+            -- Would They Collide with the Ground?
+            -- If Yes, "on_ground" = True
+            local on_ground = map:check_collision(
+                self.x,
+                self.y + 1,
+                self.width,
+                self.height)
+
+            -- Horizontal Movement
             if btn("a") then self.vx = self.vx - 0.5 end
             if btn("d") then self.vx = self.vx + 0.5 end
-            if btn("w") then self.vy = self.vy - 0.5 end
-            if btn("s") then self.vy = self.vy + 0.5 end
 
-            local size = 64
-
-            if not map:check_collision(new_x, self.y, size, size) then
-                self.x = new_x
-            end
-            if not map:check_collision(self.x, new_y, size, size) then
-                self.y = new_y
+            -- Jump
+            if btnp("w") and on_ground then 
+                self.vy = -15 
             end
 
             Physics.apply_gravity(self)
-            Physics.apply_friction(self, 0.1)
+            Physics.apply_friction(self, 0.03)
             Physics.move(self, map)
         end,
 
