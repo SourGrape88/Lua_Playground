@@ -1,6 +1,7 @@
 -- map_test.lua
 
 map = require("map"):new(32)
+Physics = require("physics")
 require("entities")
 camera = require("camera"):new()
 
@@ -33,16 +34,20 @@ function _init()
     player = spawn({
         x = 400,
         y = 300,
+        width = 64,
+        height = 64,
+        vx = 0,
+        vy = 0,
         speed = 8,
 
         update = function(self)
             local new_x = self.x
             local new_y = self.y
 
-            if btn("a") then new_x = new_x - self.speed end
-            if btn("d") then new_x = new_x + self.speed end
-            if btn("w") then new_y = new_y - self.speed end
-            if btn("s") then new_y = new_y + self.speed end
+            if btn("a") then self.vx = self.vx - 0.5 end
+            if btn("d") then self.vx = self.vx + 0.5 end
+            if btn("w") then self.vy = self.vy - 0.5 end
+            if btn("s") then self.vy = self.vy + 0.5 end
 
             local size = 64
 
@@ -52,10 +57,14 @@ function _init()
             if not map:check_collision(self.x, new_y, size, size) then
                 self.y = new_y
             end
+
+            Physics.apply_gravity(self)
+            Physics.apply_friction(self, 0.1)
+            Physics.move(self, map)
         end,
 
         draw = function(self)
-            rect(self.x, self.y, 64, 64, {0, 200, 60})
+            rect(math.floor(self.x), math.floor(self.y), self.width, self.height, {0, 200, 60})
         end
     })
 
