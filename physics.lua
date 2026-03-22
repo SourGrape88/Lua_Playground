@@ -1,6 +1,5 @@
 -- Physics.lua
 
-
 local Physics = {}
 
 -- Apply Gravity
@@ -11,42 +10,60 @@ end
 -- Apply Friction
 function Physics.apply_friction(entity, friction)
     entity.vx = entity.vx * (1 - (friction or 0.1))
-    entity.vy = entity.vy * (1 - (friction or 0.1))
+    --entity.vy = entity.vy * (1 - (friction or 0.1))
 end
 
 -- (Check Collision)
 -- Move entity and resolve collision against a Map
 function Physics.move(entity, map)
-    local new_x = entity.x + entity.vx
-    local new_y = entity.y + entity.vy
-    local w = entity.hit_w or entity.width 
+    local w = entity.hit_w or entity.width
     local h = entity.hit_h or entity.height
     local ox = entity.hit_offset_x or 0
     local oy = entity.hit_offset_y or 0
 
-    -- X-axis (Can I Move Horizontally?)
+    -- Horizontal
+    local new_x = entity.x + entity.vx
     if not map:check_collision(new_x + ox, entity.y + oy, w, h) then
-        -- Yes -> Move
         entity.x = new_x
     else
         if entity.bouncy then
-            -- No -> Stop Horizontal Velocity
-            Physics.bounce(entity, "x", 0.7)
+            entity.vx = -entity.vx * 0.7
         else
             entity.vx = 0
         end
     end
 
+    -- Vertical
+    local new_y = entity.y + entity.vy
     if not map:check_collision(entity.x + ox, new_y + oy, w, h) then
         entity.y = new_y
+        entity.on_ground = false
     else
-        if entity.bouncy then
-            Physics.bounce(entity, "y", 0.7)
-        else
+        if entity.vy > 0 then
+            -- Land on ground: snap to exact surface
+            while not map:check_collision(entity.x + ox, entity.y + oy + 1, w, h) do
+                entity.y = entity.y + 1
+            end
+
+            if entity.bouncy then
+                if math.abs(entity.vy) > 1 then
+                    entity.vy = -entity.vy * 0.5 -- damped bounce
+                else
+                    entity.vy = 0
+                end
+            else
+                entity.vy = 0
+            end
+            entity.on_ground = true
+        elseif entity.vy < 0 then
+            -- Hit ceiling
             entity.vy = 0
+            -- Move down until clear of ceiling
+            while map:check_collision(entity.x + ox, entity.y + oy, w, h) do
+                entity.y = entity.y + 1
+            end
         end
     end
-
 end
 
 function Physics.check_aabb(a, b)
@@ -106,11 +123,15 @@ function Physics.resolve_aabb(a, b)
         a.y = math.floor(a.y + 0.01)
 
         -- Only bounce if Moving Downward
-        if a.vy > 0 then
-            a.vy = -a.vy * 0.8
-        else
-            a.vy = 0
-        end
+       if a.bouncy then 
+            if a.vy > 0 then
+                a.vy = -a.vy * 0.8
+            else
+                a.vy = 0
+            end
+       else
+           a.vy = 0
+       end
     end
 end
 

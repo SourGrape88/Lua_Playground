@@ -38,6 +38,7 @@ function _init()
         vx = 0,
         vy = 0,
         speed = 14,
+        bouncy = false,
 
         update = function(self)
 
@@ -45,7 +46,7 @@ function _init()
             -- If the Player Moves Down 1 Pixel
             -- Would They Collide with the Ground?
             -- If Yes, "on_ground" = True
-            local on_ground = map:check_collision(
+            local on_ground = self.vy == 0 and map:check_collision(
                 self.x,
                 self.y + 1,
                 self.width,
@@ -66,16 +67,37 @@ function _init()
 
             if Physics.check_aabb(self, ball) then
                 -- Seperate them
-                Physics.resolve_aabb(ball, self)
 
-                local push = 1.2
+                local player_bottom = self.y + self.height
+                local ball_top = ball.y
 
-                if self.x  < ball.x then
+                local standing_on_ball = player_bottom <= ball_top + 10 and self.vy >= 0
+
+                if standing_on_ball then
+
+                    -- Place player on Top
+                    self.y = ball.y - self.height
+                    self.vy = 0
+
+                    -- Push ball down slightly (weight)
+                    ball.vy = ball.vy + 0.5
+
+                    -- Transfer Horizontal Motion
+                    ball.vx = ball.vx + (self.vx * 0.3)
+
+                else
+                    Physics.resolve_aabb(ball, self)
+                end
+
+                local push = 2.5 -- Stronger = More "Kick"
+
+                if self.x < ball.x then
                     ball.vx = ball.vx + push
                 else
                     ball.vx = ball.vx - push
                 end
-                    
+
+                -- little pop upwards
             end
         end,
 
@@ -116,10 +138,10 @@ function _init()
             Physics.move(self, map)
 
             -- Bounce off walls
-            if math.abs(self.vx) < 0.05 then
+            if math.abs(self.vx) < 0.1 then
                 self.vx = 0 -- Reverse Direction
             end
-            if math.abs(self.vy) < 0.05 then
+            if math.abs(self.vy) < 0.01 then
                 self.vy = 0 -- Reverse Direction
             end
 
