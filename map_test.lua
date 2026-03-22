@@ -65,42 +65,32 @@ function _init()
             Physics.apply_friction(self, 0.03)
             Physics.move(self, map)
 
-            if Physics.check_aabb(self, ball) then
-                -- Seperate them
+        if Physics.check_aabb(self, ball) then
+            local player_bottom = self.y + self.height
+            local ball_top = ball.y
 
-                local player_bottom = self.y + self.height
-                local ball_top = ball.y
+            local standing_on_ball = player_bottom <= ball_top + 10 and self.vy >= 0
 
-                local standing_on_ball = player_bottom <= ball_top + 10 and self.vy >= 0
+            if standing_on_ball then
+                -- Place player on Top
+                self.y = ball.y - self.height
+                self.vy = 0
+                local kick_strength = 8
+                if self.x < ball.x then ball.vx = kick_strength else ball.vx = -kick_strength end
+                ball.vy = -5
+                ball.vx = ball.vx + (self.vx * 0.3)
+            else
+                local push = self.vx * 0.5
+                ball.vx = ball.vx + push
 
-                if standing_on_ball then
-
-                    -- Place player on Top
-                    self.y = ball.y - self.height
-                    self.vy = 0
-
-                    -- Push ball down slightly (weight)
-                    ball.vy = ball.vy + 0.5
-
-                    -- Transfer Horizontal Motion
-                    ball.vx = ball.vx + (self.vx * 0.3)
-
-                else
-                    Physics.resolve_aabb(ball, self)
+                if self.y < ball.y then
+                    ball.vy = ball.vy - math.abs(self.vy * 0.2)
                 end
-
-                local push = 2.5 -- Stronger = More "Kick"
-
-                if self.x < ball.x then
-                    ball.vx = ball.vx + push
-                else
-                    ball.vx = ball.vx - push
-                end
-
-                -- little pop upwards
             end
-        end,
+        end
+    end,
 
+              
         draw = function(self)
             rect(math.floor(self.x), math.floor(self.y), self.width, self.height, {0, 200, 60})
         end
