@@ -1,4 +1,5 @@
--- map_test.lua
+-- This is map_test.lua
+
 map = require("map"):new(32)
 Physics = require("physics")
 require("entities")
@@ -88,6 +89,17 @@ function _init()
                 end
             end
         end
+
+        if btnp("space") and Physics.check_aabb(self, ball) then
+            local power = 12
+            ball.vy = -power -- push ball upwards
+            if self.x < ball.x then
+                ball.vx = ball.vx + 3
+            else
+                ball.vx = ball.vx - 3
+            end
+        end
+
     end,
 
               
