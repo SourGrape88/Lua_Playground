@@ -144,6 +144,44 @@ function Physics.bounce(entity, axis, strength)
     end
 end
 
+function Physics.handle_ball_collision(player, ball)
+    if not Physics.check_aabb(player, ball) then return end
+
+    local player_bottom = player.y + player.height
+    local ball_top = ball.y
+
+    local standing_on_ball = player_bottom <= ball_top + 10 and player.vy >= 0
+
+    if standing_on_ball then
+        -- player standing on ball
+        player.y = ball.y - player.height
+        player.vy = 0
+        local kick_strength = 8
+        if player.x < ball.x then ball.vx = kick_strength else ball.vx = -kick_strength end
+        ball.vy = -5
+        ball.vx = ball.vx + (player.vx * 0.3)
+    else
+        -- horizontal push
+        local push = player.vx * 0.5
+        ball.vx = ball.vx + push
+        if player.y < ball.y then
+            ball.vy = ball.vy - math.abs(player.vy * 0.2)
+        end
+    end
+end
+
+function Physics.space_kick(player, ball, strength)
+    if btnp("space") and Physics.check_aabb(player, ball) then
+        local kick_strength = strength or 12
+        ball.vy = -kick_strength
+        if player.x < ball.x then 
+            ball.vx = ball.vx + 3
+        else
+            ball.vx = ball.vx - 3
+        end
+    end
+end
+
 return Physics
 
 

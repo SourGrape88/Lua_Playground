@@ -66,43 +66,11 @@ function _init()
             Physics.apply_friction(self, 0.03)
             Physics.move(self, map)
 
-        if Physics.check_aabb(self, ball) then
-            local player_bottom = self.y + self.height
-            local ball_top = ball.y
+            Physics.handle_ball_collision(self, ball)
+            Physics.space_kick(self, ball)
 
-            local standing_on_ball = player_bottom <= ball_top + 10 and self.vy >= 0
+        end,
 
-            if standing_on_ball then
-                -- Place player on Top
-                self.y = ball.y - self.height
-                self.vy = 0
-                local kick_strength = 8
-                if self.x < ball.x then ball.vx = kick_strength else ball.vx = -kick_strength end
-                ball.vy = -5
-                ball.vx = ball.vx + (self.vx * 0.3)
-            else
-                local push = self.vx * 0.5
-                ball.vx = ball.vx + push
-
-                if self.y < ball.y then
-                    ball.vy = ball.vy - math.abs(self.vy * 0.2)
-                end
-            end
-        end
-
-        if btnp("space") and Physics.check_aabb(self, ball) then
-            local power = 12
-            ball.vy = -power -- push ball upwards
-            if self.x < ball.x then
-                ball.vx = ball.vx + 3
-            else
-                ball.vx = ball.vx - 3
-            end
-        end
-
-    end,
-
-              
         draw = function(self)
             rect(math.floor(self.x), math.floor(self.y), self.width, self.height, {0, 200, 60})
         end
