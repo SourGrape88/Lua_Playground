@@ -1,5 +1,4 @@
 -- map_test.lua
-
 map = require("map"):new(32)
 Physics = require("physics")
 require("entities")
@@ -64,6 +63,20 @@ function _init()
             Physics.apply_gravity(self)
             Physics.apply_friction(self, 0.03)
             Physics.move(self, map)
+
+            if Physics.check_aabb(self, ball) then
+                -- Seperate them
+                Physics.resolve_aabb(ball, self)
+
+                local push = 1.2
+
+                if self.x  < ball.x then
+                    ball.vx = ball.vx + push
+                else
+                    ball.vx = ball.vx - push
+                end
+                    
+            end
         end,
 
         draw = function(self)
@@ -81,6 +94,53 @@ function _init()
     )
 
     camera:follow(player)
+
+    -- Ball Entity
+    ball = spawn({
+        x = 500,
+        y = 200,
+        r = 32,
+        width = 64,
+        height = 64,
+        hit_w = 32,
+        hit_h = 32,
+        hit_offset_x = 16,
+        hit_offset_y = 16,
+        vx = 0,
+        vy = 0,
+        bouncy = true,
+
+        update = function(self)
+            Physics.apply_gravity(self, 0.4)
+            Physics.apply_friction(self, 0.01)
+            Physics.move(self, map)
+
+            -- Bounce off walls
+            if math.abs(self.vx) < 0.05 then
+                self.vx = 0 -- Reverse Direction
+            end
+            if math.abs(self.vy) < 0.05 then
+                self.vy = 0 -- Reverse Direction
+            end
+
+        end,
+        
+        draw = function(self)
+        -- Center the circle on the hitbox
+        local cx = math.floor((self.x - 16) + (self.hit_offset_x or 0) + (self.hit_w or self.width)/2)
+        local cy = math.floor((self.y - 16) + (self.hit_offset_y or 0) + (self.hit_h or self.height)/2)
+        circle(cx, cy, self.r, {200, 50, 50})
+
+        -- Hitbox rectangle
+        rect(
+            math.floor(self.x + (self.hit_offset_x or 0)),
+            math.floor(self.y + (self.hit_offset_y or 0)),
+            self.hit_w or self.width,
+            self.hit_h or self.height,
+            {10, 0, 255})
+         end   
+     })
+
 end
 
 function _update()

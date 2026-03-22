@@ -156,7 +156,7 @@ class NeovimWidget(QWidget):
                     y = r * cell_h
                     painter.fillRect(x, y, cell_w, cell_h, bg)
                     painter.setPen(fg)
-                    painter.drawText(x, y + cell_h, char)   
+                    painter.drawText(x, y + metrics.ascent(), char)   
 
             # Draw cursor
             if grid is self.model.grids.get(self.model.active_grid):
@@ -180,16 +180,24 @@ class NeovimWidget(QWidget):
         key = event.key()
         text = event.text()
 
-        seq = text
-
-        if key in [
+        seq = ""
+    # SAFE ASCII mapping
+        if key == Qt.Key.Key_Less:
+            seq = "<"
+        elif key == Qt.Key.Key_Greater:
+            seq = ">"
+        elif key == Qt.Key.Key_Comma and event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+            seq = "<"
+        elif key == Qt.Key.Key_Period and event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+            seq = ">"
+        
+        elif key in [
             Qt.Key.Key_Backspace,
             Qt.Key.Key_Return,
             Qt.Key.Key_Enter,
             Qt.Key.Key_Tab,
             Qt.Key.Key_Escape
         ]:
-
             seq = {
                 Qt.Key.Key_Backspace: "<BS>",
                 Qt.Key.Key_Return: "<CR>",
@@ -198,8 +206,13 @@ class NeovimWidget(QWidget):
                 Qt.Key.Key_Escape: "<Esc>",
             }[key]
 
-        
-        self.nvim_client.input(seq)
+        else:
+            # 🔥 CRITICAL: strip bad unicode
+            if text:
+                seq = text.encode("ascii", "ignore").decode()
+
+        if seq:
+          self.nvim_client.input(seq)
 
 
     def resizeEvent(self, event):
