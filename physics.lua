@@ -171,7 +171,7 @@ function Physics.handle_ball_collision(player, ball)
 end
 
 function Physics.space_kick(player, ball, strength)
-    if btnp("space") and Physics.check_aabb(player, ball) then
+    if btn("space") and Physics.check_aabb(player, ball) then
         local kick_strength = strength or 12
         ball.vy = -kick_strength
         if player.x < ball.x then 

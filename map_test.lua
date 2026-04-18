@@ -38,7 +38,7 @@ function _init()
         height = 64,
         vx = 0,
         vy = 0,
-        speed = 14,
+        speed = 18,
         bouncy = false,
 
         update = function(self)
