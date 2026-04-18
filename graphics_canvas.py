@@ -3,6 +3,7 @@
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor, QPixmap
 from PyQt6.QtCore import QTimer, Qt
+from shaders import ShaderSystem
 
 class Canvas(QWidget):
 
@@ -12,7 +13,7 @@ class Canvas(QWidget):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setFocus()
         self.lua = lua
-        
+        self.shaders = ShaderSystem()
         # Demo Python State
         self.x = 300
         self.dx = 2
@@ -123,6 +124,8 @@ class Canvas(QWidget):
         lua_init = getattr(self.lua.globals(), "_init", None)
         lua_update = getattr(self.lua.globals(), "_update", None)
         lua_draw = getattr(self.lua.globals(), "_draw", None)
+
+        self.shaders.clear()
 
         # Track FPS
         self.frame_count += 1
@@ -279,6 +282,8 @@ class Canvas(QWidget):
 
             finally:
                 painter.restore()
+
+        self.shaders.apply(painter, self.rect())
             
     def mousePressEvent(self, event):
         self.setFocus()
@@ -295,3 +300,6 @@ class Canvas(QWidget):
 
         self.keys_down.discard(qt_key)
         self.keys_pressed.discard(qt_key) 
+
+
+

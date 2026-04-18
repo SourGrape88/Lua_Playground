@@ -37,7 +37,12 @@ class MainWindow(QMainWindow):
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self.lua_globals = self.lua.globals()
 
+        self.bind_lua_functions()
+
         self.canvas = Canvas(self.lua)
+        #g = self.lua.globals()
+        
+        #self.canvas = Canvas(self.lua)
 
         # Start LSP Clients
         self.lua_client = LSPClient(["lua-language-server", "-E", "main.lua"])
@@ -54,7 +59,7 @@ class MainWindow(QMainWindow):
         self.canvas.setFocus()
         builtins.print = lambda *args, **kwargs: self.output_console.log(" ".join(str(a) for a in args))
         #self.lua_globals.print = lambda *args: self.output_console.log(" ".join(str(a) for a in args))
-        self.bind_lua_functions() 
+        #self.bind_lua_functions() 
         self.running = False
         self.canvas.running_ref = lambda: self.running
         
@@ -132,6 +137,7 @@ class MainWindow(QMainWindow):
               10)
 
     def bind_lua_functions(self):
+        g = self.lua.globals()
 
         # Expose Python draw functions to Lua
         self.lua_globals.circle = lambda x=10, y=50, r=50, color=None, thickness=2: \
@@ -168,6 +174,22 @@ class MainWindow(QMainWindow):
         self.lua_globals.btn = lambda key: self.canvas.btn(key)
         self.lua_globals.btnp = lambda key: self.canvas.btnp(key)
 
+        # Shaders
+        def shader(effect, *args):
+            #if hasattr(self.canvas, "shaders"):
+            self.canvas.shaders.add(effect, *args)
+
+        g.shader = shader
+
+        self.lua_globals.shader = shader
+
+        try:
+            self.lua_globals._G["shader"] = shader
+        except Exception:
+            pass
+        
+        print("Binding shader into Lua:", self.lua_globals)
+
     def run_lua_code(self):
         # Placeholder for now: Just print Editor Text to Console
 
@@ -203,10 +225,14 @@ class MainWindow(QMainWindow):
 
         # Reset Lua runtime completely
         self.lua = LuaRuntime(unpack_returned_tuples=True)
+        self.lua.execute("shader = nil")
         self.lua_globals = self.lua.globals()
+        self.bind_lua_functions()
+        self.canvas.lua = self.lua
+        self.runner.lua_runtime = self.lua
 
         # Rebind API Functions
-        self.bind_lua_functions()
+        #self.bind_lua_functions()
 
         # Reset Canvas
         self.canvas.cls()
@@ -214,8 +240,13 @@ class MainWindow(QMainWindow):
 
         # Reset Status Indicator
         self.status_indicator.set_idle()
-        self.runner.lua_runtime = self.lua
-        self.canvas.lua = self.lua
+        #self.canvas.lua = self.lua
+        #self.runner.lua_runtime = self.lua
+
+        #self.canvas.lua = self.lua
+        #self.lua_globals = self.lua.globals()
+        #self.canvas.lua = self.lua
+        #self.bind_lua_functions()
 
     def create_new_editor_tab(self, *args, **kwargs):
         pass

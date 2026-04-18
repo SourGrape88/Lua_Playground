@@ -31,6 +31,7 @@ class LanguageRunner:
             return str(result) if result else ""
         except Exception as e:
             return f"Lua Error: {e}"
+           # return "Lua us executed only through Canvas Runtime (game Loop)"
         
     # -- Python Execution ---
     def run_python(self, code: str, cwd: str = None):
