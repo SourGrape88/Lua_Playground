@@ -187,6 +187,20 @@ class MainWindow(QMainWindow):
             self.lua_globals._G["shader"] = shader
         except Exception:
             pass
+
+        def flash(intensity=1.0, *args):
+            self.canvas.shaders.add("flash", intensity, *args)
+
+        def darken(intensity=0.5):
+            self.canvas.shaders.add("darken", intensity)
+
+        g.flash = flash
+        g.darken = darken
+
+        self.lua_globals.flash = flash
+        self.lua_globals.darken = darken
+
+
         
         print("Binding shader into Lua:", self.lua_globals)
 
@@ -240,13 +254,8 @@ class MainWindow(QMainWindow):
 
         # Reset Status Indicator
         self.status_indicator.set_idle()
-        #self.canvas.lua = self.lua
-        #self.runner.lua_runtime = self.lua
 
-        #self.canvas.lua = self.lua
-        #self.lua_globals = self.lua.globals()
-        #self.canvas.lua = self.lua
-        #self.bind_lua_functions()
+        self.canvas.shaders.clear()
 
     def create_new_editor_tab(self, *args, **kwargs):
         pass

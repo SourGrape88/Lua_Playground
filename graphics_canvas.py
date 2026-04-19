@@ -125,7 +125,7 @@ class Canvas(QWidget):
         lua_update = getattr(self.lua.globals(), "_update", None)
         lua_draw = getattr(self.lua.globals(), "_draw", None)
 
-        self.shaders.clear()
+        #self.shaders.clear()
 
         # Track FPS
         self.frame_count += 1
@@ -176,6 +176,10 @@ class Canvas(QWidget):
 
     def paintEvent(self, event):
         """Draw All Commands"""
+
+        #if hasattr(self, "running_ref") and not self.running_ref():
+            #return
+
         # Called Whenever the Widget needs to Redraw
         painter = QPainter(self)
 
