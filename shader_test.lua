@@ -1,4 +1,4 @@
--- Shader_test.lua -----------------
+-- SHADER_TEST.PY ----------------------------------------
 
 function _update()
     if btnp("space") then

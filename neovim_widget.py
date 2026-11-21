@@ -133,6 +133,7 @@ class NeovimWidget(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(self.rect(), self.model.default_bg)
+        # NEOVIM'S Font and Font Size Settings -----------------------------
         painter.setFont(QFont("Cascadia Code", 11))
         metrics = painter.fontMetrics()
         cell_w = metrics.horizontalAdvance("M")
@@ -227,7 +228,7 @@ class NeovimWidget(QWidget):
 
         # Compute exact number of columns and rows to fill the widget
         cols = max(10, math.ceil(self.width() / cell_w))
-        rows = max(5, math.ceil(self.height() // cell_h))
+        rows = max(6, math.ceil(self.height() // cell_h))
 
         cols += 4
         rows += 4

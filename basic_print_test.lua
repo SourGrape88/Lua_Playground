@@ -14,7 +14,7 @@ function _update()
 end
 
 function _draw()
-    cls()              -- Clear the canvas each frame
+    --cls()              -- Clear the canvas each frame
     circle(x, 200, 50) -- Draw a circle
     rect(50, 50, 100, 100)
 end
